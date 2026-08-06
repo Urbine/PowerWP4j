@@ -1,0 +1,11 @@
+net.ygbstudio.powerwp4j.base.extension.builders
+net.ygbstudio.powerwp4j.base.extension.enums
+net.ygbstudio.powerwp4j.builders
+net.ygbstudio.powerwp4j.engine
+net.ygbstudio.powerwp4j.exceptions
+net.ygbstudio.powerwp4j.models.entities
+net.ygbstudio.powerwp4j.models.schema
+net.ygbstudio.powerwp4j.models.taxonomies
+net.ygbstudio.powerwp4j.services
+net.ygbstudio.powerwp4j.utils
+net.ygbstudio.powerwp4j.utils.functional
