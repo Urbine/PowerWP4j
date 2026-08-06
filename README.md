@@ -5,6 +5,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-orange)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Code Style](https://img.shields.io/badge/code_style-Google%20Java-blueviolet)
 ![Status](https://img.shields.io/badge/status-alpha-orange)
+[![Javadoc](https://img.shields.io/badge/JavaDoc-Online-green)](https://docs.ygbstudio.net/powerwp4j)
 
 A modern Java toolkit for WordPress automation and offline content analysis. Build, update, and analyze WordPress content with a type-safe REST client, incremental caching, and powerful analysis utilities—all designed with expressive Java idioms and testable abstractions.
 
