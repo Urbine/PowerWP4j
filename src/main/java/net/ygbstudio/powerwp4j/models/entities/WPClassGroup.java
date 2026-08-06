@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param <T> the type of the key
  * @param <U> the type of the values
+ * @param groupByKey the key used to group the values
+ * @param groupedValues the values grouped under the key
  */
 public record WPClassGroup<T, U>(@NotNull T groupByKey, @NotNull Set<U> groupedValues) {
   public WPClassGroup {

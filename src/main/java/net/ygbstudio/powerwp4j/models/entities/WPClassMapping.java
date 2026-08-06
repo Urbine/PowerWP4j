@@ -29,9 +29,10 @@ import org.jetbrains.annotations.Unmodifiable;
 /**
  * Represents a mapping between a WordPress API class ID and a taxonomy value.
  *
+ * @param <K> The type of the key.
+ * @param <V> The type of the taxonomy value.
  * @param key The key of the class (category or tag).
  * @param value The value of the taxonomy marker.
- * @param <V> The type of the taxonomy value.
  */
 public record WPClassMapping<K, V>(@NotNull K key, @NotNull V value) {
 

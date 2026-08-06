@@ -29,25 +29,45 @@ import net.ygbstudio.powerwp4j.base.extension.enums.CacheKeyEnum;
  * @see CacheKeyEnum
  */
 public enum WPCacheKey implements CacheKeyEnum {
+  /** Alternative text. */
   ALT_TEXT("alt_text"),
+  /** Author ID. */
   AUTHOR("author"),
+  /** Media caption. */
   CAPTION("caption"),
+  /** CSS class list. */
   CLASS_LIST("class_list"),
+  /** Rendered content. */
   CONTENT("content"),
+  /** Comment status. */
   COMMENT_STATUS("comment_status"),
+  /** Local date. */
   DATE("date"),
+  /** GMT date. */
   DATE_GMT("date_gmt"),
+  /** Description text. */
   DESCRIPTION("description"),
+  /** Excerpt text. */
   EXCERPT("excerpt"),
+  /** Featured media ID. */
   FEATURED_MEDIA("featured_media"),
+  /** Post format. */
   FORMAT("format"),
+  /** Global unique identifier. */
   GUID("guid"),
+  /** Post ID. */
   ID("id"),
+  /** Permalink URL. */
   LINK("link"),
+  /** URL slug. */
   SLUG("slug"),
+  /** Post status. */
   STATUS("status"),
+  /** Sticky flag. */
   STICKY("sticky"),
+  /** Post title. */
   TITLE("title"),
+  /** Post type. */
   TYPE("type");
 
   private final String value;

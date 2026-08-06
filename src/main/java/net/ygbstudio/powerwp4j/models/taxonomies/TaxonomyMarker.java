@@ -36,10 +36,15 @@ import net.ygbstudio.powerwp4j.base.extension.enums.ClassMarkerEnum;
  * @author Yoham Gabriel @ YGBStudio
  */
 public enum TaxonomyMarker implements ClassMarkerEnum {
+  /** Tag taxonomy marker. */
   TAG("tag"),
+  /** Category taxonomy marker. */
   CATEGORY("category"),
+  /** Post taxonomy marker. */
   POST("post"),
+  /** Type taxonomy marker. */
   TYPE("type"),
+  /** Status taxonomy marker. */
   STATUS("status");
 
   private final String value;

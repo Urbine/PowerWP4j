@@ -25,16 +25,11 @@ import net.ygbstudio.powerwp4j.base.extension.enums.PostTypeEnum;
 /**
  * Enum representing different types of WordPress posts.
  *
- * <p>
- * This enum includes common post types such as standard posts, attachments, and
- * photos. Each
- * enum constant is associated with its corresponding string representation used
- * in WordPress.
+ * <p>This enum includes common post types such as standard posts, attachments, and photos. Each
+ * enum constant is associated with its corresponding string representation used in WordPress.
  *
- * @see <a
- *      href=
- *      "https://developer.wordpress.org/reference/functions/get_post_type/">get_post_type()</a>
- * 
+ * @see <a href=
+ *     "https://developer.wordpress.org/reference/functions/get_post_type/">get_post_type()</a>
  */
 public enum WPPostType implements PostTypeEnum {
   POST("post"),
