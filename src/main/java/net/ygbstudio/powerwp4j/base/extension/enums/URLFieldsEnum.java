@@ -36,8 +36,9 @@ public non-sealed interface URLFieldsEnum extends FriendlyEnum {
   /**
    * Joins the given fields into a single string, separated by commas.
    *
-   * @param fields The fields to join.
-   * @return A string containing the joined fields.
+   * @param baseField the leading field prefix
+   * @param fields the fields to join
+   * @return a string containing the joined fields
    */
   default String joinFields(URLFieldsEnum baseField, URLFieldsEnum... fields) {
     return baseField

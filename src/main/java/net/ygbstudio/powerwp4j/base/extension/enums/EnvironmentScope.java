@@ -24,16 +24,23 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
  * Enumeration that represents the keys for the environment variables required to connect to a
  * WordPress site.
  *
- * @implNote This enum implements the {@link FriendlyEnum} interface to enforce a user-friendly
- *     string representation of the enum constants.
+ * <p>This enum implements the {@link FriendlyEnum} interface to enforce a user-friendly string
+ * representation of the enum constants.
+ *
  * @author Yoham Gabriel @ YGBStudio
  */
 public enum EnvironmentScope implements FriendlyEnum {
+  /** {@code wp.user} property key. */
   WP_USER_PROP("wp.user"),
+  /** {@code wp.appPass} property key. */
   WP_APPLICATION_PASS_PROP("wp.appPass"),
+  /** {@code wp.fqdn} property key. */
   WP_FULLY_QUALIFIED_DOMAIN_NAME_PROP("wp.fqdn"),
+  /** {@code WP_USER} environment variable. */
   WP_USER_ENV("WP_USER"),
+  /** {@code WP_APP_PASS} environment variable. */
   WP_APPLICATION_PASS_ENV("WP_APP_PASS"),
+  /** {@code WP_FQDN} environment variable. */
   WP_FULLY_QUALIFIED_DOMAIN_NAME_ENV("WP_FQDN");
 
   private final String value;

@@ -43,10 +43,9 @@ public non-sealed interface QueryParamEnum extends FriendlyEnum {
    * will help you and throw an {@link IllegalArgumentException} if you do not provide any query
    * parameters.
    *
-   * @param wpRestQueriesMap
-   *     <p>Map of query parameters and their values.
-   * @return
-   *     <p>String that can be used as a query string.
+   * @param <E> the query parameter enum type
+   * @param wpRestQueriesMap map of query parameters and their values
+   * @return string that can be used as a query string
    */
   static <E extends QueryParamEnum> @NotNull String joinQueryParams(
       @NotNull Map<E, String> wpRestQueriesMap) {
