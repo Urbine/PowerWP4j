@@ -23,4 +23,4 @@ jobs:
           javadoc-branch: gh-pages
           java-version: 21
           project: maven
-          target-folder: powerwp4j
+          target-folder: .
