@@ -11,7 +11,7 @@
 
     <name>PowerWP4j</name>
     <description>Power WP for Java</description>
-    <url>https://github.com/YGBStudio/PowerWP4j</url>
+    <url>https://github.com/Urbine/PowerWP4j</url>
 
     <licenses>
         <license>
@@ -28,9 +28,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:https://github.com/YGBStudio/PowerWP4j.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com:YGBStudio/PowerWP4j.git</developerConnection>
-        <url>https://github.com/YGBStudio/PowerWP4j</url>
+        <connection>scm:git:https://github.com/Urbine/PowerWP4j.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:Urbine/PowerWP4j.git</developerConnection>
+        <url>https://github.com/Urbine/PowerWP4j</url>
     </scm>
 
     <properties>
