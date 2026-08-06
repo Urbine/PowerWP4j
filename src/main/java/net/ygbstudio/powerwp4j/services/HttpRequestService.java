@@ -68,6 +68,8 @@ public final class HttpRequestService {
   private static final int TASK_TERMINATION_TIMEOUT_MINS = 5;
 
   private static final Logger httpServiceLogger = LoggerFactory.getLogger(HttpRequestService.class);
+
+  /** MIME type used for JSON requests and responses. */
   public static final String JSON_CONTENT_TYPE = "application/json";
 
   private HttpRequestService() {}
@@ -119,6 +121,7 @@ public final class HttpRequestService {
    * @param apiBasePath the base path for the WordPress REST API
    * @param queryParams the query parameters to be used in the request
    * @param pathParam the path parameter to be used in the request
+   * @param <E> the query parameter enum type
    * @return the request URL
    */
   public static <E extends QueryParamEnum> @NotNull String makeRequestURL(
@@ -366,7 +369,9 @@ public final class HttpRequestService {
     }
     if (retryCount >= retryAttempts && retryPred != null && !retryPred.test(resultType)) {
       Supplier<String> errorMessage =
-          () -> Objects.requireNonNullElse(retryFailedMessage != null ? retryFailedMessage.get() : null, "Retries exceeded");
+          () ->
+              Objects.requireNonNullElse(
+                  retryFailedMessage != null ? retryFailedMessage.get() : null, "Retries exceeded");
       httpServiceLogger.error(errorMessage.get());
     }
     return resultType;

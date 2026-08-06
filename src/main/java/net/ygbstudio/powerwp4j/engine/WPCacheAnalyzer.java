@@ -69,8 +69,14 @@ public class WPCacheAnalyzer {
 
   private ArrayNode inMemoryCache;
 
+  /** Creates an analyzer without loading a cache yet. */
   public WPCacheAnalyzer() {}
 
+  /**
+   * Creates an analyzer and loads the cache from the given path.
+   *
+   * @param cachePath the path to the cache file
+   */
   public WPCacheAnalyzer(@NotNull Path cachePath) {
     this.loadLocalCache(cachePath);
   }
@@ -447,6 +453,9 @@ public class WPCacheAnalyzer {
    * <p><em>Tip: If you do not wish to transform/clean your taxonomy (class) strings, you can pass
    * the {@link UnaryOperator#identity()} to ignore the transformation step.</em>
    *
+   * @param transformClassText transformer applied to each taxonomy/class string before grouping
+   * @param classMarker the class marker enum to extract
+   * @param classValue the class value key enum to extract
    * @return a stream of instances extracted from the cache filtered by the specified cache key
    */
   public Stream<WPClassMapping<String, Long>> mapWPClassId(
@@ -552,6 +561,7 @@ public class WPCacheAnalyzer {
    *
    * @param classMarker the class marker enum to calculate term frequency by
    * @param classMapping the class mapping to calculate term frequency for
+   * @param containsMatch whether to match by containment instead of exact equality
    * @return the term frequency of the given class mapping by class marker
    */
   public Long calculateTermFrequencyByClassMarker(

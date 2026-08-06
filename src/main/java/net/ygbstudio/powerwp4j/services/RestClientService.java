@@ -222,6 +222,7 @@ public final class RestClientService {
    * @param username The username for authentication.
    * @param applicationPassword The application password for authentication.
    * @param attachmentPath The file path of the media to be uploaded.
+   * @param payload optional JSON payload used to update the uploaded media metadata
    * @param ignoreSSLHandshakeException Whether to ignore SSL Handshake Exception, useful for
    *     testing purposes or local environments.
    * @return An Optional containing the JSON response from the server if the request was successful,
