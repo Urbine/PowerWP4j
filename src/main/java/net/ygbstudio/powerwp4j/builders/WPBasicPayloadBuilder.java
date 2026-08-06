@@ -36,29 +36,21 @@ import org.jetbrains.annotations.NotNull;
 import tools.jackson.databind.JsonNode;
 
 /**
- * Basic payload builder for WordPress REST Payloads. It can be used for posts
- * and taxonomy
+ * Basic payload builder for WordPress REST Payloads. It can be used for posts and taxonomy
  * creation.
  *
- * <p>
- * Inherits all methods from {@link AbstractPayloadBuilder} to provide a
- * chainable pattern for
- * building payloads for the WordPress REST API. The payload is built using a
- * {@link JsonNode}
+ * <p>Inherits all methods from {@link AbstractPayloadBuilder} to provide a chainable pattern for
+ * building payloads for the WordPress REST API. The payload is built using a {@link JsonNode}
  * object.
  *
- * <p>
- * In case you need to attach a payload to a media file, use
- * {@link WPMediaPayloadBuilder}.
+ * <p>In case you need to attach a payload to a media file, use {@link WPMediaPayloadBuilder}.
  *
  * @see AbstractPayloadBuilder
- * 
  */
 @JsonInclude(Include.NON_NULL)
 public class WPBasicPayloadBuilder extends AbstractPayloadBuilder<WPBasicPayloadBuilder> {
 
-  private WPBasicPayloadBuilder() {
-  }
+  private WPBasicPayloadBuilder() {}
 
   @Override
   protected WPBasicPayloadBuilder self() {
@@ -75,50 +67,62 @@ public class WPBasicPayloadBuilder extends AbstractPayloadBuilder<WPBasicPayload
     return new WPBasicPayloadBuilder();
   }
 
+  /** Returns the configured post status, or {@code null} if unset. */
   public PostStatusEnum getStatus() {
     return enumFromValue(WPStatus.class, status, true).orElse(null);
   }
 
+  /** Returns the configured category IDs, or {@code null} if unset. */
   public List<Integer> getCategories() {
     return categories;
   }
 
+  /** Returns the configured tag IDs, or {@code null} if unset. */
   public List<Integer> getTags() {
     return tags;
   }
 
+  /** Returns the configured slug, or {@code null} if unset. */
   public String getSlug() {
     return slug;
   }
 
+  /** Returns the configured title, or {@code null} if unset. */
   public String getTitle() {
     return title;
   }
 
+  /** Returns the configured content, or {@code null} if unset. */
   public String getContent() {
     return content;
   }
 
+  /** Returns the configured excerpt, or {@code null} if unset. */
   public String getExcerpt() {
     return excerpt;
   }
 
+  /** Returns the configured author ID, or {@code null} if unset. */
   public Integer getAuthor() {
     return author;
   }
 
+  /** Returns the configured featured media ID, or {@code null} if unset. */
   public Integer getFeaturedMedia() {
     return featuredMedia;
   }
 
+  /** Returns the configured taxonomy name, or {@code null} if unset. */
   public String getName() {
     return name;
   }
 
+  /** Returns the configured taxonomy description, or {@code null} if unset. */
   public String getDescription() {
     return description;
   }
 
+  /** Returns the configured comment status, or {@code null} if unset. */
   public CommentStatusEnum getCommentStatus() {
     return enumFromValue(WPCommentStatus.class, commentStatus, true).orElse(null);
   }

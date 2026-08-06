@@ -26,21 +26,26 @@ import tools.jackson.databind.JsonNode;
  * Abstract builder for media attachment payloads.
  *
  * @see AbstractPayloadBuilder
- * 
+ * @param <T> the concrete media payload builder subtype
  */
 public abstract class AbstractMediaPayloadBuilder<T extends AbstractMediaPayloadBuilder<T>> {
+  /** Alternative text for the media attachment. */
   protected String altText;
+
+  /** Caption for the media attachment. */
   protected String caption;
+
+  /** Description for the media attachment. */
   protected String description;
 
+  /** Creates an empty media payload builder base. */
+  protected AbstractMediaPayloadBuilder() {}
+
   /**
-   * Returns the current instance of the payload builder. This is a protected
-   * method used for
+   * Returns the current instance of the payload builder. This is a protected method used for
    * chaining method calls.
    *
-   * <p>
-   * The cast to type T is safe because the method is only called within the class
-   * hierarchy and
+   * <p>The cast to type T is safe because the method is only called within the class hierarchy and
    * this class is parameterized with the type of the subclass.
    *
    * @return the current instance of the payload builder
@@ -84,8 +89,7 @@ public abstract class AbstractMediaPayloadBuilder<T extends AbstractMediaPayload
   }
 
   /**
-   * Resets all fields of the builder to their initial state. This method is
-   * marked as final to
+   * Resets all fields of the builder to their initial state. This method is marked as final to
    * ensure consistent behavior across all subclasses.
    *
    * @return the current builder instance for method chaining

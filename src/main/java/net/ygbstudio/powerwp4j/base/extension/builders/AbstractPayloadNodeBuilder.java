@@ -53,7 +53,11 @@ import tools.jackson.databind.node.ObjectNode;
  * @param <T> The type of the concrete builder subclass.
  */
 public abstract class AbstractPayloadNodeBuilder<T extends AbstractPayloadNodeBuilder<T>> {
+  /** Backing JSON object used to assemble the payload. */
   protected ObjectNode payloadNode;
+
+  /** Creates an empty payload node builder base. */
+  protected AbstractPayloadNodeBuilder() {}
 
   /**
    * Returns the current instance of the payload builder. This is a protected method used for
@@ -153,6 +157,7 @@ public abstract class AbstractPayloadNodeBuilder<T extends AbstractPayloadNodeBu
    *
    * @param propertyEnum the enum value of the property
    * @param value the value of the property
+   * @param <E> the enum type for the property key
    * @return the current instance of the payload builder
    */
   protected <E extends CacheKeyEnum> T add(@NotNull E propertyEnum, String value) {
@@ -166,6 +171,7 @@ public abstract class AbstractPayloadNodeBuilder<T extends AbstractPayloadNodeBu
    *
    * @param propertyEnum the enum value of the property
    * @param value the value enum of the property
+   * @param <E> the enum type for the value
    * @return the current instance of the payload builder
    */
   protected <E extends FriendlyEnum> T add(@NotNull CacheKeyEnum propertyEnum, @NotNull E value) {
@@ -178,6 +184,7 @@ public abstract class AbstractPayloadNodeBuilder<T extends AbstractPayloadNodeBu
    *
    * @param propertyEnum the enum value of the property
    * @param value the value of the property (int)
+   * @param <E> the enum type for the property key
    * @return the current instance of the payload builder
    */
   protected <E extends FriendlyEnum> T add(@NotNull E propertyEnum, int value) {
@@ -191,6 +198,7 @@ public abstract class AbstractPayloadNodeBuilder<T extends AbstractPayloadNodeBu
    *
    * @param propertyEnum the enum value of the property
    * @param value the value of the property (long)
+   * @param <E> the enum type for the property key
    * @return the current instance of the payload builder
    */
   protected <E extends FriendlyEnum> T add(@NotNull E propertyEnum, long value) {
@@ -204,6 +212,7 @@ public abstract class AbstractPayloadNodeBuilder<T extends AbstractPayloadNodeBu
    *
    * @param propertyEnum the enum value of the property
    * @param value the value of the property (short)
+   * @param <E> the enum type for the property key
    * @return the current instance of the payload builder
    */
   protected <E extends FriendlyEnum> T add(@NotNull E propertyEnum, short value) {
@@ -217,6 +226,7 @@ public abstract class AbstractPayloadNodeBuilder<T extends AbstractPayloadNodeBu
    *
    * @param propertyEnum the enum value of the property
    * @param value the value of the property (boolean)
+   * @param <E> the enum type for the property key
    * @return the current instance of the payload builder
    */
   protected <E extends FriendlyEnum> T add(@NotNull E propertyEnum, boolean value) {

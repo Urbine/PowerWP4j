@@ -29,23 +29,17 @@ import org.jetbrains.annotations.NotNull;
 import tools.jackson.databind.JsonNode;
 
 /**
- * Builder for WordPress media attachment payloads. Inherits all methods from
- * its abstract
- * superclass to provide a chainable pattern for building media attachment
- * payloads.
+ * Builder for WordPress media attachment payloads. Inherits all methods from its abstract
+ * superclass to provide a chainable pattern for building media attachment payloads.
  *
- * <p>
- * If you need to use a builder for posts or taxonomies, use
- * {@link WPBasicPayloadBuilder}.
+ * <p>If you need to use a builder for posts or taxonomies, use {@link WPBasicPayloadBuilder}.
  *
  * @see AbstractMediaPayloadBuilder
- * 
  */
 @JsonInclude(Include.NON_EMPTY)
 public class WPMediaPayloadBuilder extends AbstractMediaPayloadBuilder<WPMediaPayloadBuilder> {
 
-  private WPMediaPayloadBuilder() {
-  }
+  private WPMediaPayloadBuilder() {}
 
   /**
    * Creates a new instance of {@link WPMediaPayloadBuilder}.
@@ -57,14 +51,17 @@ public class WPMediaPayloadBuilder extends AbstractMediaPayloadBuilder<WPMediaPa
     return new WPMediaPayloadBuilder();
   }
 
+  /** Returns the configured alternative text, or {@code null} if unset. */
   public String getAltText() {
     return altText;
   }
 
+  /** Returns the configured caption, or {@code null} if unset. */
   public String getCaption() {
     return caption;
   }
 
+  /** Returns the configured description, or {@code null} if unset. */
   public String getDescription() {
     return description;
   }

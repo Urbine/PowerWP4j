@@ -32,57 +32,78 @@ import org.jetbrains.annotations.NotNull;
 import tools.jackson.databind.JsonNode;
 
 /**
- * Abstract class for payload builders that can be used to simplify the process
- * of building payloads
- * for the WordPress REST API. From this class, you can create your own payload
- * builders that can be
- * used to interact with the methods provided by the {@link HttpRequestService}
- * class.
+ * Abstract class for payload builders that can be used to simplify the process of building payloads
+ * for the WordPress REST API. From this class, you can create your own payload builders that can be
+ * used to interact with the methods provided by the {@link HttpRequestService} class.
  *
- * <p>
- * Methods that return the payload builder are chainable and inherited by all
- * subclasses, so that
- * builders can relay on the same behaviour or specialize it for their specific
- * needs.
+ * <p>Methods that return the payload builder are chainable and inherited by all subclasses, so that
+ * builders can relay on the same behaviour or specialize it for their specific needs.
  *
- * <p>
- * Note that it is possible to reuse the same builder in cases where your flow
- * requires it. To do
- * that, call {@link AbstractPayloadBuilder#clear()} before building a new
- * payload. The {@code
- * clear} operation is chainable so you can start your builder with it and chain
- * the elements you
+ * <p>Note that it is possible to reuse the same builder in cases where your flow requires it. To do
+ * that, call {@link AbstractPayloadBuilder#clear()} before building a new payload. The {@code
+ * clear} operation is chainable so you can start your builder with it and chain the elements you
  * need after a clean start.
  *
  * @see FriendlyEnum
- * 
+ * @param <T> the concrete payload builder subtype
  */
 public abstract class AbstractPayloadBuilder<T extends AbstractPayloadBuilder<T>> {
+  /** WordPress author ID. */
   protected Integer author;
+
+  /** WordPress post status value. */
   protected String status;
+
+  /** WordPress post type value. */
   protected String type;
+
+  /** WordPress post format value. */
   protected String format;
+
+  /** WordPress comment status value. */
   protected String commentStatus;
+
+  /** Category IDs associated with the payload. */
   protected List<Integer> categories;
+
+  /** Tag IDs associated with the payload. */
   protected List<Integer> tags;
+
+  /** URL slug for the payload. */
   protected String slug;
+
+  /** Taxonomy name for taxonomy payloads. */
   protected String name;
+
+  /** Taxonomy description for taxonomy payloads. */
   protected String description;
+
+  /** Post title. */
   protected String title;
+
+  /** Post content. */
   protected String content;
+
+  /** Post excerpt. */
   protected String excerpt;
+
+  /** Password for password-protected content. */
   protected String password;
+
+  /** Whether the post is sticky. */
   protected Boolean sticky;
+
+  /** Featured media attachment ID. */
   protected Integer featuredMedia;
 
+  /** Creates an empty payload builder base. */
+  protected AbstractPayloadBuilder() {}
+
   /**
-   * Returns the current instance of the payload builder. This is a protected
-   * method used for
+   * Returns the current instance of the payload builder. This is a protected method used for
    * chaining method calls.
    *
-   * <p>
-   * The cast to type T is safe because the method is only called within the class
-   * hierarchy and
+   * <p>The cast to type T is safe because the method is only called within the class hierarchy and
    * this class is parameterized with the type of the subclass.
    *
    * @return the current instance of the payload builder
@@ -269,10 +290,8 @@ public abstract class AbstractPayloadBuilder<T extends AbstractPayloadBuilder<T>
   }
 
   /**
-   * Resets all fields of the builder to their initial state. This method is
-   * marked as final to
-   * ensure consistent behavior across all subclasses. Collections are cleared
-   * rather than set to
+   * Resets all fields of the builder to their initial state. This method is marked as final to
+   * ensure consistent behavior across all subclasses. Collections are cleared rather than set to
    * null to prevent memory leaks.
    *
    * @return the current builder instance for method chaining
