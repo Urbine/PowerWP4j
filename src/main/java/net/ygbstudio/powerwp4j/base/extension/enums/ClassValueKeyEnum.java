@@ -38,4 +38,4 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
  *
  * @author Yoham Gabriel B. @YGBStudio
  */
-public non-sealed interface ClassValueKeyEnum extends FriendlyEnum, CacheKeyEnum {}
+public interface ClassValueKeyEnum extends CacheKeyEnum {}

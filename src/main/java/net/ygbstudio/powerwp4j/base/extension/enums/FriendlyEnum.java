@@ -23,41 +23,30 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
 import org.jetbrains.annotations.Contract;
 
 /**
- * This interface is designed to enforce a consistent approach to Java enums in
- * the PowerWP4j
- * project. It provides a uniform way to access the value of enum constants,
- * which is the actual
- * string to be used in the API. By extending this interface, enums become more
- * user-friendly and
- * easier to work with. This interface is sealed because all extension enum
- * classes implement it and
- * no other class should implement it to avoid misuse.
- *
- * 
+ * This interface is designed to enforce a consistent approach to Java enums in the PowerWP4j
+ * project. It provides a uniform way to access the value of enum constants, which is the actual
+ * string to be used in the API. By extending this interface, enums become more user-friendly and
+ * easier to work with. Only top-level enum types provided by PowerWP4j implement this interface to
+ * avoid misuse.
  */
 public sealed interface FriendlyEnum
     permits CacheKeyEnum,
-    CacheSubKeyEnum,
-    ClassMarkerEnum,
-    ClassValueKeyEnum,
-    CommentStatusEnum,
-    EnvironmentScope,
-    PostFormatEnum,
-    PostStatusEnum,
-    PostTypeEnum,
-    QueryParamEnum,
-    RestPathEnum,
-    URLFieldsEnum {
+        CacheSubKeyEnum,
+        ClassMarkerEnum,
+        CommentStatusEnum,
+        EnvironmentScope,
+        PostFormatEnum,
+        PostStatusEnum,
+        PostTypeEnum,
+        QueryParamEnum,
+        RestPathEnum,
+        URLFieldsEnum {
 
   /**
-   * Returns the value of the enum constant, which is the actual string to be used
-   * in the API.
+   * Returns the value of the enum constant, which is the actual string to be used in the API.
    *
-   * <p>
-   * Example: If an enum constant is named {@code STATUS_PENDING}, the value
-   * returned by this
-   * method would be {@code "pending"}, which is the value provided in its
-   * constructor.
+   * <p>Example: If an enum constant is named {@code STATUS_PENDING}, the value returned by this
+   * method would be {@code "pending"}, which is the value provided in its constructor.
    *
    * @return the value of the enum constant
    */
