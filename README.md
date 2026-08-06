@@ -1,11 +1,11 @@
 # PowerWP4j
 
-[![CI](https://github.com/YGBStudio/PowerWP4j/actions/workflows/maven.yml/badge.svg)](https://github.com/YGBStudio/PowerWP4j/actions/workflows/maven.yml)
+[![CI](https://github.com/Urbine/PowerWP4j/actions/workflows/maven.yml/badge.svg)](https://github.com/Urbine/PowerWP4j/actions/workflows/maven.yml)
 ![Java](https://img.shields.io/badge/java-21-blue)
 [![License](https://img.shields.io/badge/license-Apache--2.0-orange)](https://www.apache.org/licenses/LICENSE-2.0)
 ![Code Style](https://img.shields.io/badge/code_style-Google%20Java-blueviolet)
 ![Status](https://img.shields.io/badge/status-alpha-orange)
-[![Javadoc](https://img.shields.io/badge/JavaDoc-Online-green)](https://docs.ygbstudio.net/powerwp4j)
+[![Javadoc](https://img.shields.io/badge/JavaDoc-Online-green)](https://urbine.github.io/PowerWP4j)
 
 A modern Java toolkit for WordPress automation and offline content analysis. Build, update, and analyze WordPress content with a type-safe REST client, incremental caching, and powerful analysis utilities—all designed with expressive Java idioms and testable abstractions.
 
@@ -67,7 +67,7 @@ dependencies {
 ```
 
 #### JitPack (Alternative)
-You can also fetch the project via [JitPack](https://jitpack.io/#YGBStudio/PowerWP4j). 
+You can also fetch the project via [JitPack](https://jitpack.io/#Urbine/PowerWP4j). 
 
 ### Runtime dependencies (minimal)
 - **Jackson 3.x** — JSON processing
