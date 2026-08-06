@@ -29,10 +29,12 @@ import org.jetbrains.annotations.NotNull;
  * @author Yoham Gabriel B.
  */
 public class CacheFileSystemException extends RuntimeException {
+  /** Creates a new cache file system exception with the given message. */
   public CacheFileSystemException(String message) {
     super(message);
   }
 
+  /** Creates a new cache file system exception with a lazily computed message. */
   public CacheFileSystemException(@NotNull Supplier<String> message) {
     super(message.get());
   }

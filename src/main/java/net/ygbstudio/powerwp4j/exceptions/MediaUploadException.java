@@ -29,10 +29,12 @@ import org.jetbrains.annotations.NotNull;
  * @author Yoham Gabriel B. @ YGBStudio
  */
 public class MediaUploadException extends RuntimeException {
+  /** Creates a new media upload exception with the given message. */
   public MediaUploadException(String message) {
     super(message);
   }
 
+  /** Creates a new media upload exception with a lazily computed message. */
   public MediaUploadException(@NotNull Supplier<String> message) {
     super(message.get());
   }
