@@ -31,12 +31,17 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CacheMetaDataException extends RuntimeException {
   /** Creates a new cache metadata exception with the given message. */
-  public CacheMetaDataException(String message) {
+  public CacheMetaDataException(@NotNull String message) {
     super(message);
   }
 
   /** Creates a new cache metadata exception with a lazily computed message. */
   public CacheMetaDataException(@NotNull Supplier<String> message) {
     super(message.get());
+  }
+
+  /** Creates a new cache metadata exception with a message and an upstream exception (cause). */
+  public CacheMetaDataException(@NotNull String message, @NotNull Throwable cause) {
+    super(message, cause);
   }
 }

@@ -24,6 +24,7 @@ import static net.ygbstudio.powerwp4j.utils.JsonSupport.readJsonFs;
 import static net.ygbstudio.powerwp4j.utils.JsonSupport.writeJsonFs;
 
 import java.io.File;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
@@ -31,13 +32,9 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import net.ygbstudio.powerwp4j.exceptions.CacheMetaDataException;
 import net.ygbstudio.powerwp4j.models.entities.WPSiteInfo;
@@ -101,41 +98,18 @@ public record WPCacheMeta(long totalPages, long totalPosts, @Nullable LocalDate 
    *
    * @param metaPath the path to the metadata file
    * @param cacheMetaObj the WPCacheMeta object to write
-   * @param overwriteMetadata a boolean indicating if the metadata file should be overwritten
    * @return a boolean indicating if the metadata file was updated
+   * @throws CacheMetaDataException if there is an error in metadata object write to the fs.
    */
-  public static boolean writeCacheMetadata(
-      Path metaPath, WPCacheMeta cacheMetaObj, boolean overwriteMetadata) {
-    ReentrantLock metaLock = new ReentrantLock();
+  public static void writeCacheMetadata(Path metaPath, WPCacheMeta cacheMetaObj) {
 
-    // Used for lambda capture and thread safety
-    AtomicBoolean updated = new AtomicBoolean(false);
-
-    BiConsumer<Path, WPCacheMeta> writeJsonFsConsumer =
-        (path, meta) -> {
-          metaLock.lock();
-          try {
-            writeJsonFs(path.toFile(), meta);
-            updated.set(true);
-          } finally {
-            metaLock.unlock();
-          }
-        };
-
-    if (Files.exists(metaPath) && overwriteMetadata) {
-      writeJsonFsConsumer.accept(metaPath, cacheMetaObj);
-    } else if (!Files.exists(metaPath)) {
-      writeJsonFsConsumer.accept(metaPath, cacheMetaObj);
+    try {
+      writeJsonFs(metaPath.toFile(), cacheMetaObj);
+      wpCacheMetaLogger.info("Successful cache metadata write at {}", metaPath);
+    } catch (Exception ex) {
+      wpCacheMetaLogger.warn("Exception as CacheMetaDataException", ex);
+      throw new CacheMetaDataException("Unable to write cache file at path " + metaPath, ex);
     }
-
-    if (updated.get())
-      wpCacheMetaLogger.info(
-          "{}",
-          overwriteMetadata && updated.get()
-              ? "Replaced cache metadata file"
-              : "Successfully created cache metadata.");
-
-    return updated.get();
   }
 
   /**
@@ -147,6 +121,7 @@ public record WPCacheMeta(long totalPages, long totalPosts, @Nullable LocalDate 
    * @param ignoreSSLHandshakeException a boolean indicating if SSL Handshake Exception should be
    *     ignored
    * @return an optional WPCacheMeta object
+   * @throws CacheMetaDataException if response headers are incomplete, non-exposed or blocked.
    */
   public static Optional<WPCacheMeta> updateCacheMeta(
       @NotNull WPSiteInfo siteInfo, Path cachePath, boolean ignoreSSLHandshakeException) {
@@ -160,27 +135,36 @@ public record WPCacheMeta(long totalPages, long totalPosts, @Nullable LocalDate 
                 WPQueryParam.PER_PAGE,
                 String.valueOf(defaultPerPage)),
             WPRestPath.POSTS);
+
     HttpRequest request =
         HttpRequestService.buildWpGetRequest(
             requestUrl, siteInfo.wpUser(), siteInfo.wpAppPass(), wpCacheMetaLogger);
+
     Optional<HttpResponse<String>> response =
         HttpRequestService.clientSend(request, wpCacheMetaLogger, ignoreSSLHandshakeException);
+
     if (response.isEmpty()) return Optional.empty();
-    Map<String, List<String>> headers = response.get().headers().map();
-    long wpTotal;
-    long wpTotalPages;
-    try {
-      wpTotal = Long.parseLong(headers.get("x-wp-total").getFirst());
-      wpTotalPages = Long.parseLong(headers.get("x-wp-totalpages").getFirst());
-    } catch (NullPointerException e) {
+
+    HttpHeaders headers = response.get().headers();
+    Optional<String> wpTotalHeader = headers.firstValue("x-wp-total");
+    Optional<String> wpTotalPagesHeader = headers.firstValue("x-wp-totalpages");
+
+    if (wpTotalHeader.isEmpty() || wpTotalPagesHeader.isEmpty()) {
       throw new CacheMetaDataException(
           "Unable to update the cache metadata - incomplete, non-exposed or blocked response headers");
     }
+
+    long wpTotal = Long.parseLong(wpTotalHeader.get());
+    long wpTotalPages = Long.parseLong(wpTotalPagesHeader.get());
+
     WPCacheMeta newWPCacheMeta =
         new WPCacheMeta(wpTotalPages, wpTotal, LocalDate.ofInstant(Instant.now(), ZoneOffset.UTC));
-    boolean isUpdated =
-        WPCacheMeta.writeCacheMetadata(getMetaPath(cachePath), newWPCacheMeta, true);
-    if (isUpdated) return Optional.of(newWPCacheMeta);
-    return Optional.empty();
+
+    try {
+      WPCacheMeta.writeCacheMetadata(getMetaPath(cachePath), newWPCacheMeta);
+      return Optional.of(newWPCacheMeta);
+    } catch (CacheMetaDataException ex) {
+      return Optional.empty();
+    }
   }
 }
