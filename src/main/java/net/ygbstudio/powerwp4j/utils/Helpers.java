@@ -51,8 +51,7 @@ import org.slf4j.LoggerFactory;
  * Utility class for reusable logic in the project.
  *
  * <p>This class contains methods that can be used throughout the application to perform common
- * tasks, such as retrieving JSON-B property values from annotated classes or other utility
- * functions. It is designed to be a utility class, so it should not be instantiated.
+ * tasks. It is designed to be a utility class, so it should not be instantiated.
  */
 public final class Helpers {
 
