@@ -37,7 +37,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -45,6 +44,8 @@ import java.util.stream.Stream;
 import net.ygbstudio.powerwp4j.base.extension.enums.FriendlyEnum;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for reusable logic in the project.
@@ -54,6 +55,8 @@ import org.jetbrains.annotations.Nullable;
  * functions. It is designed to be a utility class, so it should not be instantiated.
  */
 public final class Helpers {
+
+  private static final Logger helpersLogger = LoggerFactory.getLogger(Helpers.class);
 
   private Helpers() {
     throw new AssertionError("Cannot instantiate utility class");
@@ -68,23 +71,17 @@ public final class Helpers {
    */
   public static Optional<Properties> getPropertiesFromResources(String propertyFileName) {
     Properties properties = new Properties();
-    Logger propertiesLogger = Logger.getLogger("Helpers: getPropertiesFromResources");
 
     try (InputStream in = Helpers.class.getResourceAsStream("/" + propertyFileName)) {
       if (Objects.isNull(in)) {
-        propertiesLogger.warning("Properties file not found...");
+        helpersLogger.warn("Properties file not found...");
         throw new FileNotFoundException(
             "Property file '" + propertyFileName + "' not found in resources.");
       }
-      propertiesLogger.info("Properties file loaded successfully...");
+      helpersLogger.info("Properties file loaded successfully...");
       properties.load(in);
     } catch (IOException ioex) {
-      propertiesLogger.warning(
-          () ->
-              "Error while loading property file. "
-                  + ioex.getMessage()
-                  + " "
-                  + Arrays.toString(ioex.getStackTrace()));
+      helpersLogger.warn("Exception while loading property file", ioex);
       return Optional.empty();
     }
 
