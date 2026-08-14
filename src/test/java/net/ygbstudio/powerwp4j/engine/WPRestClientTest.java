@@ -63,7 +63,7 @@ class WPRestClientTest {
     response = client.createPost(payloadBuilder.build());
     long createdId = 0;
     if (response.isPresent()) {
-      System.out.println(response.get().body());
+      wpRestClientTestLogger.info(response.get().body());
       createdId =
           response
               .map(HttpResponse::body)
@@ -78,7 +78,7 @@ class WPRestClientTest {
     if (createdId > 0) {
       // Delete post if created
       response = client.deletePost(createdId);
-      System.out.println(response.get().body());
+      wpRestClientTestLogger.info(response.get().body());
     } else {
       wpRestClientTestLogger.error("Post not created");
     }

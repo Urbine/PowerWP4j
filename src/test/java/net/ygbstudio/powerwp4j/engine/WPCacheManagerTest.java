@@ -85,7 +85,7 @@ class WPCacheManagerTest {
       boolean updatePerformed = wpSite.cacheSync();
       // No update took place
       assertThat(updatePerformed, is(false));
-      System.out.println("Sleeping....");
+      wpCacheManagerTestLogger.info("Sleeping....");
       // Add a post - Adjust the time as needed
       TimeUnit.SECONDS.sleep(45);
       updatePerformed = wpSite.cacheSync();
