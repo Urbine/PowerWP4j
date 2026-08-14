@@ -10,6 +10,7 @@
 A modern Java toolkit for WordPress automation and offline content analysis. Build, update, and analyze WordPress content with a type-safe REST client, incremental caching, and powerful analysis utilities—all designed with expressive Java idioms and testable abstractions.
 
 ## Table of Contents
+
 1. [Features](#features)
 2. [Requirements](#requirements)
 3. [Installation](#installation)
@@ -23,12 +24,12 @@ A modern Java toolkit for WordPress automation and offline content analysis. Bui
 
 ## Features
 
-| Capability | Description |
-|------------|-------------|
-| **REST Client** | Create, update, delete posts, categories, tags, and media using Application Password auth |
-| **Local Cache** | Fetch WordPress posts into a JSON file with metadata; supports incremental sync via WordPress headers |
-| **Offline Analysis** | Query the cache without HTTP calls—counts, sets, snapshots of posts, slugs, tags, categories, GUIDs |
-| **Taxonomy Extraction** | Extract and aggregate taxonomy data for automation, reporting, or ML workflows |
+| Capability              | Description                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| **REST Client**         | Create, update, delete posts, categories, tags, and media using Application Password auth             |
+| **Local Cache**         | Fetch WordPress posts into a JSON file with metadata; supports incremental sync via WordPress headers |
+| **Offline Analysis**    | Query the cache without HTTP calls—counts, sets, snapshots of posts, slugs, tags, categories, GUIDs   |
+| **Taxonomy Extraction** | Extract and aggregate taxonomy data for automation, reporting, or ML workflows                        |
 
 **Design philosophy**: Expressive, declarative modern Java (records, `Optional`, streams, immutability-first) with documented nullability. Alpha status—API may evolve.
 
@@ -42,6 +43,7 @@ A modern Java toolkit for WordPress automation and offline content analysis. Bui
 ## Installation
 
 ### Build & install locally
+
 ```bash
 mvn clean install
 ```
@@ -51,6 +53,7 @@ mvn clean install
 > `[VERSION]` refers to the current stable release.
 
 #### Maven
+
 ```xml
 <dependency>
   <groupId>net.ygbstudio</groupId>
@@ -60,6 +63,7 @@ mvn clean install
 ```
 
 #### Gradle
+
 ```gradle
 dependencies {
     implementation 'net.ygbstudio:powerwp4j:[VERSION]'
@@ -67,9 +71,11 @@ dependencies {
 ```
 
 #### JitPack (Alternative)
-You can also fetch the project via [JitPack](https://jitpack.io/#Urbine/PowerWP4j). 
+
+You can also fetch the project via [JitPack](https://jitpack.io/#Urbine/PowerWP4j).
 
 ### Runtime dependencies (minimal)
+
 - **Jackson 3.x** — JSON processing
 - **Apache Tika Core** — MIME type detection
 - **Apache Commons Lang3** — String utilities
@@ -80,6 +86,7 @@ You can also fetch the project via [JitPack](https://jitpack.io/#Urbine/PowerWP4
 ### 1. Configure site info
 
 **Properties file** (`<your-config-file>.properties` on classpath):
+
 ```properties
 wp.fqdn=example.com
 wp.user=my_username
@@ -95,18 +102,21 @@ WPSiteInfo siteInfo = WPSiteInfo
 ```
 
 **Environment variables**:
+
 ```bash
 export WP_FQDN=example.com \
        WP_USER=my_username \
        WP_APP_PASS='xxxx xxxx xxxx'
 ```
+
 ```java
 WPSiteInfo siteInfo = WPSiteInfo
-    .fromEnvironment()
+    .fromEnv()
     .orElseThrow(IllegalStateException::new);
 ```
 
 ### 2. Create a post
+
 ```java
 var payload = WPBasicPayloadBuilder.builder()
     .title("Hello from PowerWP4j")
@@ -124,6 +134,7 @@ Optional<HttpResponse<String>> response =
 ```
 
 ### 3. Upload media
+
 ```java
 // Optional: pass WPMediaPayloadBuilder to update alt text, caption, description
 client.uploadMedia(
@@ -132,6 +143,7 @@ client.uploadMedia(
 ```
 
 ### 4. Create and sync cache
+
 ```java
 Path cachePath =
     Path.of("wp-posts.json");
@@ -150,8 +162,9 @@ boolean updated =
 ```
 
 ### 5. Analyze cache offline
+
 ```java
-WPCacheAnalyzer analyzer = 
+WPCacheAnalyzer analyzer =
         new WPCacheAnalyzer(Path.of("wp-posts.json"));
 
 long count = analyzer.getPostCount();
@@ -164,6 +177,7 @@ var tags = analyzer.getCleanTags();
 ```
 
 ### 6. Extract taxonomies
+
 ```java
 UnaryOperator<String> cleanOp =
     tag ->
@@ -182,24 +196,29 @@ var mappedTags =
 ## Use Cases
 
 **Content Automation**
+
 - Programmatically create/update posts using metadata from existing content
 - Automate taxonomy assignment based on cached data
 
 **Taxonomy & Metadata Analysis**
+
 - Aggregate category/tag usage across a site
 - Compute taxonomy frequencies without REST calls
 
 **Data Modeling & ML**
+
 - Use the local cache as a structured dataset
 - Feed analyzed WordPress data into ML pipelines
 
 **Offline-First Analysis**
+
 - Perform repeatable analysis without network dependency
 - Ensure deterministic results from fixed snapshots
 
 ### Non-Goals
 
 PowerWP4j **does not** aim to:
+
 - Replace WordPress as a CMS
 - Provide exhaustive WordPress admin coverage
 - Offer automatic/real-time cache sync
@@ -208,15 +227,15 @@ PowerWP4j **does not** aim to:
 
 ## Key Modules
 
-| Module | Purpose |
-|--------|---------|
-| `engine.WPRestClient` | REST façade for posts, taxonomies, media |
-| `engine.WPCacheManager` | Fetches/syncs cache JSON with incremental support |
-| `engine.WPCacheAnalyzer` | Offline analysis utilities |
-| `builders.*` | Chainable payload builders with snake_case Jackson mapping |
-| `services.*` | HTTP plumbing and REST utilities |
-| `models.schema` | Default WordPress schema enums (prefixed `WP`) |
-| `models.taxonomies` | Taxonomy helpers |
+| Module                   | Purpose                                                    |
+| ------------------------ | ---------------------------------------------------------- |
+| `engine.WPRestClient`    | REST façade for posts, taxonomies, media                   |
+| `engine.WPCacheManager`  | Fetches/syncs cache JSON with incremental support          |
+| `engine.WPCacheAnalyzer` | Offline analysis utilities                                 |
+| `builders.*`             | Chainable payload builders with snake_case Jackson mapping |
+| `services.*`             | HTTP plumbing and REST utilities                           |
+| `models.schema`          | Default WordPress schema enums (prefixed `WP`)             |
+| `models.taxonomies`      | Taxonomy helpers                                           |
 
 ### Cache Design
 
@@ -229,15 +248,16 @@ PowerWP4j **does not** aim to:
 
 PowerWP4j supports custom post types and taxonomies via extension interfaces:
 
-| Interface | Purpose |
-|-----------|---------|
-| `PostTypeEnum` | Custom post types (must have `show_in_rest => true`) |
-| `ClassMarkerEnum` | Custom taxonomy markers |
-| `ClassValueEnum` | Custom taxonomy values |
-| `CacheKeyEnum` | Custom cache keys |
-| `CacheSubKeyEnum` | Nested JSON object keys |
+| Interface         | Purpose                                              |
+| ----------------- | ---------------------------------------------------- |
+| `PostTypeEnum`    | Custom post types (must have `show_in_rest => true`) |
+| `ClassMarkerEnum` | Custom taxonomy markers                              |
+| `ClassValueEnum`  | Custom taxonomy values                               |
+| `CacheKeyEnum`    | Custom cache keys                                    |
+| `CacheSubKeyEnum` | Nested JSON object keys                              |
 
 **Example implementation:**
+
 ```java
 public enum MyCacheKeys implements CacheKeyEnum {
 
@@ -274,14 +294,15 @@ Yes. Supports ignoring SSL certificate issues for localhost/Docker/self-signed s
 
 ## Development
 
-| Command | Purpose |
-|---------|---------|
-| `mvn clean package` | Build |
-| `mvn test` | Run tests |
-| `mvn fmt:format` | Format code (Google Java Style) |
-| `mvn javadoc:javadoc` | Generate docs |
+| Command               | Purpose                         |
+| --------------------- | ------------------------------- |
+| `mvn clean package`   | Build                           |
+| `mvn test`            | Run tests                       |
+| `mvn fmt:format`      | Format code (Google Java Style) |
+| `mvn javadoc:javadoc` | Generate docs                   |
 
 ### Project Layout
+
 ```
 src/main/java/net/ygbstudio/powerwp4j/
 ├── base/       # Extension models and abstractions
@@ -305,4 +326,4 @@ Copyright © 2025–2026 YGBStudio
 
 ---
 
-*This project is not affiliated with or endorsed by WordPress.org.*
+_This project is not affiliated with or endorsed by WordPress.org._
