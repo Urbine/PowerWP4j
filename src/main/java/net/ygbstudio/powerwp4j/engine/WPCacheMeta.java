@@ -93,12 +93,11 @@ public record WPCacheMeta(long totalPages, long totalPosts, @Nullable LocalDate 
   }
 
   /**
-   * Writes the WPCacheMeta object to the metadata file and returns a boolean indicating if the
-   * metadata file was updated.
+   * Writes the WPCacheMeta object to the metadata file at the specified path in the local file
+   * system.
    *
    * @param metaPath the path to the metadata file
    * @param cacheMetaObj the WPCacheMeta object to write
-   * @return a boolean indicating if the metadata file was updated
    * @throws CacheMetaDataException if there is an error in metadata object write to the fs.
    */
   public static void writeCacheMetadata(Path metaPath, WPCacheMeta cacheMetaObj) {
