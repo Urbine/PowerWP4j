@@ -25,6 +25,8 @@ import java.io.Reader;
 import java.net.http.HttpResponse;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
@@ -44,6 +46,7 @@ import tools.jackson.databind.json.JsonMapper;
  */
 public final class JsonSupport {
 
+  private static final Logger jsonSupportLogger = LoggerFactory.getLogger(JsonSupport.class);
   private static final ObjectMapper jsonMapper = configureMapper();
 
   private JsonSupport() {}
@@ -183,6 +186,9 @@ public final class JsonSupport {
     try {
       return Optional.ofNullable(jsonMapper.readValue(response.body(), clazz));
     } catch (Exception e) {
+      jsonSupportLogger.warn(
+          "Method: deserialize(HttpResponse<String>, Class<T>) failed with exception.", e);
+      jsonSupportLogger.debug("Context: response: {} | class: {}", response.body(), clazz);
       return Optional.empty();
     }
   }
@@ -204,6 +210,9 @@ public final class JsonSupport {
     try {
       return Optional.ofNullable(jsonMapper.readValue(response.body(), typeRef));
     } catch (Exception e) {
+      jsonSupportLogger.warn(
+          "Method: deserialize(HttpResponse<String>, TypeReference<T>) failed with exception", e);
+      jsonSupportLogger.debug("Context: response: {} | typeRef: {}", response.body(), typeRef);
       return Optional.empty();
     }
   }
