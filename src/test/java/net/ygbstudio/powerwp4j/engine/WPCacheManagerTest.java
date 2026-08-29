@@ -7,17 +7,18 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.File;
-import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpResponse;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import net.ygbstudio.powerwp4j.base.extension.enums.QueryParamEnum;
+import net.ygbstudio.powerwp4j.exceptions.LocalConfigurationException;
 import net.ygbstudio.powerwp4j.models.entities.WPSiteInfo;
 import net.ygbstudio.powerwp4j.models.schema.WPQueryParam;
 import net.ygbstudio.powerwp4j.models.schema.WPRestPath;
+import net.ygbstudio.powerwp4j.services.SSLContexts;
 import net.ygbstudio.powerwp4j.utils.functional.TypedTrigger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -37,11 +38,13 @@ class WPCacheManagerTest {
   @BeforeEach
   void setUp() {
     // Create this file in the resources folder
-    WPSiteInfo.fromConfigResource("appConfig.properties")
-        .ifPresentOrElse(
-            site -> siteInfo = site,
-            () -> siteInfo = new WPSiteInfo("example.com", "admin", "abc def ghi jkl"));
-    wpSite = new WPCacheManager(siteInfo, cacheFile.toPath());
+    try {
+      siteInfo = WPSiteInfo.fromConfigResource("appConfig.properties");
+    } catch (LocalConfigurationException e) {
+      siteInfo = new WPSiteInfo(URI.create("https://example.com"), "admin", "abc def ghi jkl");
+    }
+
+    wpSite = new WPCacheManager(siteInfo, cacheFile.toPath(), SSLContexts.defaultSSLContext());
   }
 
   String makeSiteUrl(WPCacheManager engineInstance, long pageNumber) {
@@ -62,7 +65,8 @@ class WPCacheManagerTest {
 
   @Test
   void makeRequestTest() {
-    WPCacheManager wpCacheManager = new WPCacheManager("example.com", "user", "pass");
+    WPCacheManager wpCacheManager =
+        new WPCacheManager(URI.create("https://example.com"), "user", "pass");
     String url = makeSiteUrl(wpCacheManager, 1);
     assertThat(url, is("https://example.com/wp-json/wp/v2/posts?page=1&per_page=10"));
   }
@@ -81,21 +85,18 @@ class WPCacheManagerTest {
     TypedTrigger<Exception> exceptionMessage =
         ex -> wpCacheManagerTestLogger.error("Exception caught in fetchJsonCacheTest", ex);
     try {
-      wpSite.fetchCacheFromInstancePath(true, false);
       boolean updatePerformed = wpSite.cacheSync();
       // No update took place
       assertThat(updatePerformed, is(false));
       wpCacheManagerTestLogger.info("Sleeping....");
       // Add a post - Adjust the time as needed
-      TimeUnit.SECONDS.sleep(45);
+      TimeUnit.SECONDS.sleep(5);
       updatePerformed = wpSite.cacheSync();
       // Then the cacheSync algorithm must detect the change and update
       assertThat(updatePerformed, is(true));
       // No update will take place because the cache is up-to-date.
       updatePerformed = wpSite.cacheSync();
       assertThat(updatePerformed, is(false));
-    } catch (IOException e) {
-      exceptionMessage.activate(e);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       exceptionMessage.activate(e);
@@ -108,13 +109,13 @@ class WPCacheManagerTest {
     assertThat(siteInfo.wpUser(), not(emptyOrNullString()));
     assertThat(siteInfo.wpAppPass(), not(emptyOrNullString()));
     // Constructor without cachePath
-    WPCacheManager wpCacheManager = new WPCacheManager(siteInfo);
+    WPCacheManager wpCacheManager = new WPCacheManager(siteInfo, null);
     Map<QueryParamEnum, String> queryParams = Map.of(WPQueryParam.PER_PAGE, "10");
     try {
-      Optional<HttpResponse<String>> wpSiteEngineResponse =
+      HttpResponse<String> wpSiteEngineResponse =
           wpCacheManager.connectWP(queryParams, WPRestPath.POSTS);
-      if (wpSiteEngineResponse.isPresent()) {
-        Map<String, List<String>> headers = wpSiteEngineResponse.get().headers().map();
+      if (wpSiteEngineResponse != null) {
+        Map<String, List<String>> headers = wpSiteEngineResponse.headers().map();
         Long wpTotal = Long.parseLong(headers.get("x-wp-total").getFirst());
         Long wpTotalPages = Long.parseLong(headers.get("x-wp-totalpages").getFirst());
         assertThat(wpTotal, notNullValue());

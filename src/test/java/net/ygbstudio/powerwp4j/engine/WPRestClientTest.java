@@ -4,13 +4,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 
+import java.net.URI;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import net.ygbstudio.powerwp4j.builders.WPBasicPayloadBuilder;
 import net.ygbstudio.powerwp4j.builders.WPMediaPayloadBuilder;
+import net.ygbstudio.powerwp4j.exceptions.LocalConfigurationException;
 import net.ygbstudio.powerwp4j.models.entities.WPSiteInfo;
 import net.ygbstudio.powerwp4j.models.schema.WPPostType;
 import net.ygbstudio.powerwp4j.models.schema.WPStatus;
@@ -33,7 +36,11 @@ class WPRestClientTest {
   @BeforeEach
   void setUp() {
     // Create this file in the resources folder
-    WPSiteInfo.fromConfigResource("appConfig.properties").ifPresent(site -> siteInfo = site);
+    try {
+      siteInfo = WPSiteInfo.fromConfigResource("appConfig.properties");
+    } catch (LocalConfigurationException e) {
+      siteInfo = new WPSiteInfo(URI.create("https://example.com"), "admin", "abc def ghi jkl");
+    }
   }
 
   @Test
@@ -52,20 +59,20 @@ class WPRestClientTest {
         .tags(List.of(45, 89));
     wpRestClientTestLogger.info(payloadBuilder.build().toString());
     WPRestClient client = WPRestClient.of(siteInfo);
-    Optional<HttpResponse<String>> response = client.createPost(payloadBuilder.build());
-    assertThat(response.isPresent(), is(true));
-    assertThat(response.get().statusCode(), is(201));
-    assertThat(response.get().body(), not(emptyOrNullString()));
-    wpRestClientTestLogger.info(response.get().body());
+    HttpResponse<String> response = client.createPost(payloadBuilder.build());
+    assertThat(response, notNullValue());
+    assertThat(response.statusCode(), is(201));
+    assertThat(response.body(), not(emptyOrNullString()));
+    wpRestClientTestLogger.info(response.body());
 
     // Change post status
     ObjectMapper mapper = JsonSupport.getMapper();
     response = client.createPost(payloadBuilder.build());
     long createdId = 0;
-    if (response.isPresent()) {
-      wpRestClientTestLogger.info(response.get().body());
+    if (response != null) {
+      wpRestClientTestLogger.info(response.body());
       createdId =
-          response
+          Optional.of(response)
               .map(HttpResponse::body)
               .map(mapper::readTree)
               .map(item -> item.get("id").asLong())
@@ -73,12 +80,14 @@ class WPRestClientTest {
     }
 
     response = client.changePostStatus(createdId, WPStatus.TRASH);
-    wpRestClientTestLogger.info(response.get().body());
+    assertThat(response, notNullValue());
+    wpRestClientTestLogger.info(response.body());
 
     if (createdId > 0) {
       // Delete post if created
       response = client.deletePost(createdId);
-      wpRestClientTestLogger.info(response.get().body());
+      assertThat(response, notNullValue());
+      wpRestClientTestLogger.info(response.body());
     } else {
       wpRestClientTestLogger.error("Post not created");
     }
@@ -95,10 +104,10 @@ class WPRestClientTest {
     wpRestClientTestLogger.info(mediaPayloadBuilder.build().toString());
     // Make sure to change this to the file you'll be uploading
     WPRestClient client = WPRestClient.of(siteInfo);
-    Optional<HttpResponse<String>> response =
+    HttpResponse<String> response =
         client.uploadMedia(Path.of("sample.png"), mediaPayloadBuilder.build());
-    assertThat(response.isPresent(), is(true));
-    wpRestClientTestLogger.info(response.get().body());
+    assertThat(response, notNullValue());
+    wpRestClientTestLogger.info(response.body());
   }
 
   @Test
@@ -106,9 +115,9 @@ class WPRestClientTest {
   void wpRestClientAddTagTest() {
     payloadBuilder.clear().name("powerwp4j");
     WPRestClient client = WPRestClient.of(siteInfo);
-    Optional<HttpResponse<String>> response = client.addTag(payloadBuilder.build());
-    assertThat(response.isEmpty(), is(false));
-    wpRestClientTestLogger.info(response.get().body());
+    HttpResponse<String> response = client.addTag(payloadBuilder.build());
+    assertThat(response, notNullValue());
+    wpRestClientTestLogger.info(response.body());
   }
 
   @Test
@@ -116,8 +125,8 @@ class WPRestClientTest {
   void wpRestClientAddCategoryTest() {
     payloadBuilder.clear().name("powerwp4j-category");
     WPRestClient client = WPRestClient.of(siteInfo);
-    Optional<HttpResponse<String>> response = client.addCategory(payloadBuilder.build());
-    assertThat(response.isEmpty(), is(false));
-    wpRestClientTestLogger.info(response.get().body());
+    HttpResponse<String> response = client.addCategory(payloadBuilder.build());
+    assertThat(response, notNullValue());
+    wpRestClientTestLogger.info(response.body());
   }
 }
