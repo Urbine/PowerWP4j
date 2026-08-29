@@ -43,11 +43,13 @@ import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
-import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLContext;
 import net.ygbstudio.powerwp4j.base.extension.enums.QueryParamEnum;
 import net.ygbstudio.powerwp4j.exceptions.InvalidApiUrlException;
 import net.ygbstudio.powerwp4j.exceptions.MediaUploadException;
+import net.ygbstudio.powerwp4j.exceptions.WPRequestException;
 import net.ygbstudio.powerwp4j.models.schema.WPRestPath;
+import net.ygbstudio.powerwp4j.utils.functional.ExceptionCauseTrigger;
 import net.ygbstudio.powerwp4j.utils.functional.TriggerCallable;
 import org.apache.tika.Tika;
 import org.jetbrains.annotations.Contract;
@@ -58,7 +60,7 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 /**
- * HttpRequestService is a utility class for interacting with the WordPress REST API and provide
+ * HttpRequestService is a utility class for interacting with the WordPress REST API and provides
  * convenience methods for common flows in the library.
  *
  * @author Yoham Gabriel B.
@@ -97,8 +99,9 @@ public final class HttpRequestService {
    * @param url target URL for the request
    * @param username username in your WordPress installation
    * @param applicationPassword secret that you configured for your user
-   * @param classLogger logger instance that will be used for logging in this class
+   * @param classLogger logger instance that will be used for logging in this class, or {@code null}
    * @return HttpRequest.Builder instance with common headers and URI set
+   * @throws InvalidApiUrlException if the URL is malformed
    */
   private static Builder getMainRequestBuilder(
       String url, String username, String applicationPassword, @Nullable Logger classLogger) {
@@ -133,47 +136,46 @@ public final class HttpRequestService {
   }
 
   /**
-   * Sends a request to the WordPress REST API and returns the response wrapped in an Optional type.
-   * This method is a wrapper around the {@link HttpClient} class and is used to send requests with
-   * centralised error handling and resource management.
+   * Sends a request to the WordPress REST API and returns the response. This method is a wrapper
+   * around the {@link HttpClient} class and is used to send requests with centralised error
+   * handling and resource management.
    *
    * @param request {@link HttpRequest} object that will be sent
-   * @param classLogger Instance of a class logger for error logging
-   * @param ignoreSSLHandshakeException if set to true, SSLHandshakeExceptions will be ignored and
-   *     the method will return an empty Optional
-   * @return Optional containing the response from the REST API
+   * @param classLogger logger for error logging
+   * @param sslContext the SSL context to use for the HTTPS connection
+   * @return {@link HttpResponse<String>} containing the response from the REST API; the trailing
+   *     {@code return null} is unreachable because all failure paths throw {@link
+   *     WPRequestException}
+   * @throws WPRequestException if the request fails due to I/O or interruption
    */
-  public static Optional<HttpResponse<String>> clientSend(
-      HttpRequest request, Logger classLogger, boolean ignoreSSLHandshakeException) {
-    try (HttpClient client = HttpClient.newHttpClient()) {
-      try {
-        return Optional.of(
-            client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)));
-      } catch (SSLHandshakeException sslHandshakeEx) {
-        if (!ignoreSSLHandshakeException) {
-          classLogger.debug(
-              "SSLHandshakeException while sending request - SSL Handshake Exception not handled",
-              sslHandshakeEx);
-          throw sslHandshakeEx;
+  public static @NotNull HttpResponse<String> clientSend(
+      @NotNull HttpRequest request, @NotNull Logger classLogger, @NotNull SSLContext sslContext) {
+    try (HttpClient client = HttpClient.newBuilder().sslContext(sslContext).build()) {
+      return client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+    } catch (IOException | InterruptedException ex) {
+      classLogger.debug(
+          "Request to WPEndpoint failed. Request URI: {} Headers: {}",
+          request.uri(),
+          request.headers());
+      ExceptionCauseTrigger<Exception> throwWPRequestException =
+          exception -> {
+            throw new WPRequestException("Request to WPEndpoint failed.", exception);
+          };
+      switch (ex) {
+        case IOException ioEx -> {
+          classLogger.warn("Caught IOException while sending request", ioEx);
+          throwWPRequestException.causedBy(ioEx);
         }
-        classLogger.warn(
-            "SSLHandshakeException while sending request, retrying with HTTP", sslHandshakeEx);
-        HttpRequest newRequest =
-            HttpRequest.newBuilder(request, (name, value) -> true)
-                .uri(URI.create("http:" + request.uri().getRawSchemeSpecificPart()))
-                .build();
-        return Optional.of(
-            client.send(newRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)));
+        case InterruptedException intEx -> {
+          Thread.currentThread().interrupt();
+          classLogger.warn(
+              "Caught InterruptedException: the current thread has been interrupted", intEx);
+          throwWPRequestException.causedBy(intEx);
+        }
+        default -> {}
       }
-    } catch (IOException ioEx) {
-      classLogger.warn("Caught IOException while sending request", ioEx);
-      classLogger.debug("Request {} resulted in IOException", request);
-    } catch (InterruptedException intEx) {
-      Thread.currentThread().interrupt();
-      classLogger.warn(
-          "Caught InterruptedException the current thread has been interrupted", intEx);
     }
-    return Optional.empty();
+    return null;
   }
 
   /**
@@ -183,7 +185,7 @@ public final class HttpRequestService {
    * @param username the username for the WordPress site
    * @param applicationPassword the application password for the WordPress site
    * @param classLogger the logger to use for logging
-   * @return an Optional containing the request
+   * @return an {@link HttpRequest} object representing the GET request
    */
   public static HttpRequest buildWpGetRequest(
       String url, String username, String applicationPassword, @Nullable Logger classLogger) {
@@ -219,8 +221,10 @@ public final class HttpRequestService {
    * @param username the username for the WordPress site
    * @param applicationPassword the application password for the WordPress site
    * @param attachmentPath the path to the media file to be uploaded
-   * @param classLogger the logger to use for logging
-   * @return an HttpRequest object representing the POST request
+   * @param classLogger the logger to use for logging, or {@code null}
+   * @return an {@link Optional} containing the POST request, or empty if the media could not be
+   *     processed due to I/O
+   * @throws MediaUploadException if the attachment path does not exist
    */
   public static Optional<HttpRequest> buildWpPostRequest(
       String url,
@@ -269,16 +273,22 @@ public final class HttpRequestService {
    * @param url the URL to connect to
    * @param username the username for the WordPress site
    * @param applicationPassword the application password for the WordPress site
-   * @param classLogger the logger to use for logging
-   * @return an Optional containing the response from the WordPress REST API
+   * @param classLogger the logger to use for logging, or {@code null}
+   * @param sslContext the SSL context to use for the HTTPS connection
+   * @return {@link HttpResponse} containing the response from the WordPress REST API
    * @throws InvalidApiUrlException if the URL is invalid
+   * @throws WPRequestException if the request fails
    */
-  public static Optional<HttpResponse<String>> connectGetWP(
-      String url, String username, String applicationPassword, @Nullable Logger classLogger)
+  public static @NotNull HttpResponse<String> connectGetWP(
+      String url,
+      String username,
+      String applicationPassword,
+      @Nullable Logger classLogger,
+      @NotNull SSLContext sslContext)
       throws InvalidApiUrlException {
     HttpRequest requestOptional =
         buildWpGetRequest(url, username, applicationPassword, classLogger);
-    return clientSend(requestOptional, httpServiceLogger, false);
+    return clientSend(requestOptional, httpServiceLogger, sslContext);
   }
 
   /**
@@ -288,6 +298,7 @@ public final class HttpRequestService {
    * @param clientProcedure the client function to use for link processing
    * @param filterPred the predicate to use for filtering results
    * @param collector the collector to use for collecting results
+   * @param sslContext SSL context for HTTPS connections
    * @param <R> the type of the result
    * @return the result of the processing
    */
@@ -295,11 +306,16 @@ public final class HttpRequestService {
       @NotNull List<String> linkList,
       BiFunction<HttpClient, String, CompletableFuture<R>> clientProcedure,
       Predicate<? super R> filterPred,
-      Collector<? super R, R, R> collector) {
+      Collector<? super R, R, R> collector,
+      @NotNull SSLContext sslContext) {
     R artifact;
     ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     try (HttpClient client =
-        HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).executor(executor).build()) {
+        HttpClient.newBuilder()
+            .sslContext(sslContext)
+            .version(HttpClient.Version.HTTP_2)
+            .executor(executor)
+            .build()) {
       artifact =
           linkList.parallelStream()
               .unordered()
@@ -322,17 +338,19 @@ public final class HttpRequestService {
   }
 
   /**
-   * Processes a list of links using a client function and returns a result artifact.
+   * Processes a list of links using a client function and returns a result artifact with retry.
    *
    * @param linkList the list of links to process
    * @param clientProcedure the client function to use for link processing
    * @param filterPred the predicate to use for filtering results
    * @param collector the collector to use for collecting results
-   * @param retryPred the predicate to use for retrying results
-   * @param intervalUnit the time unit for the retry interval
+   * @param retryPred predicate to test whether a retry is needed, or {@code null} for no retry
+   * @param intervalUnit the time unit for the retry interval, or {@code null} for no delay
    * @param intervalTime the time for the retry interval
    * @param retryAttempts the number of retry attempts
-   * @param retryFailedMessage the message to use for retry failure
+   * @param retryFailedMessage supplier for the message logged when retries are exhausted, or {@code
+   *     null}
+   * @param sslContext SSL context for HTTPS connections
    * @param <R> the type of the result
    * @return the result of the processing
    */
@@ -345,10 +363,11 @@ public final class HttpRequestService {
       @Nullable TimeUnit intervalUnit,
       long intervalTime,
       int retryAttempts,
-      @Nullable Supplier<String> retryFailedMessage) {
+      @Nullable Supplier<String> retryFailedMessage,
+      @NotNull SSLContext sslContext) {
 
     TriggerCallable<R> processLinks =
-        () -> linkProcessor(linkList, clientProcedure, filterPred, collector);
+        () -> linkProcessor(linkList, clientProcedure, filterPred, collector, sslContext);
 
     int retryCount = 0;
     R resultType = processLinks.get();

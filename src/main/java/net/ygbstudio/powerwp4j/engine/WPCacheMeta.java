@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import javax.net.ssl.SSLContext;
 import net.ygbstudio.powerwp4j.exceptions.CacheMetaDataException;
 import net.ygbstudio.powerwp4j.models.entities.WPSiteInfo;
 import net.ygbstudio.powerwp4j.models.schema.WPQueryParam;
@@ -103,11 +104,16 @@ public record WPCacheMeta(long totalPages, long totalPosts, @Nullable LocalDate 
   public static void writeCacheMetadata(Path metaPath, WPCacheMeta cacheMetaObj) {
 
     try {
-      writeJsonFs(metaPath.toFile(), cacheMetaObj);
+      File metaFile = metaPath.toFile();
+      if (!metaFile.exists()) {
+        Files.createFile(metaPath);
+      }
+      writeJsonFs(metaFile, cacheMetaObj);
       wpCacheMetaLogger.info("Successful cache metadata write at {}", metaPath);
     } catch (Exception ex) {
       wpCacheMetaLogger.warn("Exception as CacheMetaDataException", ex);
-      throw new CacheMetaDataException("Unable to write cache file at path " + metaPath, ex);
+      throw new CacheMetaDataException(
+          "Unable to write cache metadata file at path " + metaPath, ex);
     }
   }
 
@@ -117,13 +123,12 @@ public record WPCacheMeta(long totalPages, long totalPosts, @Nullable LocalDate 
    *
    * @param siteInfo the WPSiteInfo object containing the necessary information to make the request
    * @param cachePath the path to the cache file
-   * @param ignoreSSLHandshakeException a boolean indicating if SSL Handshake Exception should be
-   *     ignored
+   * @param sslContext The SSL context for the HTTPS connection.
    * @return an optional WPCacheMeta object
    * @throws CacheMetaDataException if response headers are incomplete, non-exposed or blocked.
    */
-  public static Optional<WPCacheMeta> updateCacheMeta(
-      @NotNull WPSiteInfo siteInfo, Path cachePath, boolean ignoreSSLHandshakeException) {
+  public static @Nullable WPCacheMeta updateCacheMeta(
+      @NotNull WPSiteInfo siteInfo, Path cachePath, SSLContext sslContext) {
     int defaultPerPage = 10;
     String requestUrl =
         HttpRequestService.makeRequestURL(
@@ -139,12 +144,12 @@ public record WPCacheMeta(long totalPages, long totalPosts, @Nullable LocalDate 
         HttpRequestService.buildWpGetRequest(
             requestUrl, siteInfo.wpUser(), siteInfo.wpAppPass(), wpCacheMetaLogger);
 
-    Optional<HttpResponse<String>> response =
-        HttpRequestService.clientSend(request, wpCacheMetaLogger, ignoreSSLHandshakeException);
+    HttpResponse<String> response =
+        HttpRequestService.clientSend(request, wpCacheMetaLogger, sslContext);
 
-    if (response.isEmpty()) return Optional.empty();
+    if (Objects.isNull(response)) return null;
 
-    HttpHeaders headers = response.get().headers();
+    HttpHeaders headers = response.headers();
     Optional<String> wpTotalHeader = headers.firstValue("x-wp-total");
     Optional<String> wpTotalPagesHeader = headers.firstValue("x-wp-totalpages");
 
@@ -159,11 +164,7 @@ public record WPCacheMeta(long totalPages, long totalPosts, @Nullable LocalDate 
     WPCacheMeta newWPCacheMeta =
         new WPCacheMeta(wpTotalPages, wpTotal, LocalDate.ofInstant(Instant.now(), ZoneOffset.UTC));
 
-    try {
-      WPCacheMeta.writeCacheMetadata(getMetaPath(cachePath), newWPCacheMeta);
-      return Optional.of(newWPCacheMeta);
-    } catch (CacheMetaDataException ex) {
-      return Optional.empty();
-    }
+    WPCacheMeta.writeCacheMetadata(getMetaPath(cachePath), newWPCacheMeta);
+    return newWPCacheMeta;
   }
 }
