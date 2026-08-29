@@ -21,19 +21,14 @@
 package net.ygbstudio.powerwp4j.engine;
 
 import static net.ygbstudio.powerwp4j.services.HttpRequestService.makeRequestURL;
-import static net.ygbstudio.powerwp4j.utils.JsonSupport.jsonReader;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -46,24 +41,24 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.LongStream;
+import javax.net.ssl.SSLContext;
 import net.ygbstudio.powerwp4j.base.extension.enums.QueryParamEnum;
 import net.ygbstudio.powerwp4j.exceptions.CacheConstructionException;
 import net.ygbstudio.powerwp4j.exceptions.CacheFileSystemException;
+import net.ygbstudio.powerwp4j.exceptions.CacheMetaDataException;
 import net.ygbstudio.powerwp4j.models.entities.WPSiteInfo;
 import net.ygbstudio.powerwp4j.models.schema.WPCacheKey;
 import net.ygbstudio.powerwp4j.models.schema.WPQueryParam;
 import net.ygbstudio.powerwp4j.models.schema.WPRestPath;
 import net.ygbstudio.powerwp4j.services.HttpRequestService;
+import net.ygbstudio.powerwp4j.services.SSLContexts;
 import net.ygbstudio.powerwp4j.utils.JsonSupport;
-import net.ygbstudio.powerwp4j.utils.functional.Trigger;
-import net.ygbstudio.powerwp4j.utils.functional.TypedTrigger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -75,55 +70,82 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 
 /**
- * WPCacheManager is the main class for interacting with a WordPress site. It provides methods for
- * fetching data from the WordPress REST API and caching it locally using JSON.
+ * Main entry point for interacting with a WordPress REST API and managing a local JSON cache.
+ *
+ * <p>Typical lifecycle: construct with {@link WPSiteInfo} and an optional {@link Path} cache file,
+ * fetch full content via {@link #fetchCache(Path)}, {@link #fetchCacheFromInstancePath()} or the
+ * first call to {@link #cacheSync()}, keep it up to date with subsequent {@link #cacheSync()}
+ * calls, and analyse it with {@link #getCacheAnalyzer()}.
+ *
+ * <p>If no cache exists, the first {@link #cacheSync()} invocation creates it automatically. A
+ * local cache is otherwise not created automatically; callers needing explicit control should use
+ * {@link #fetchCache(Path)}.
+ *
+ * <p>Pagination is controlled by {@code DEFAULT_PER_PAGE} (WordPress allows 10–100, see {@link
+ * #overrideDefaultPerPage(short)}). SSL is configured via the supplied {@link SSLContext}.
  *
  * @author Yoham Gabriel B.
+ * @since 0.1.0
+ * @see WPCacheReader
+ * @see WPCacheWriter
+ * @see WPCacheAnalyzer
  */
 public class WPCacheManager {
   private static final Logger wpSiteEngineLogger = LoggerFactory.getLogger(WPCacheManager.class);
-  private static final int DEFAULT_PER_PAGE = 10;
-  private final ReentrantLock cacheLock = new ReentrantLock();
 
-  private final WPSiteInfo siteInfo;
+  /** Default number of posts per paginated REST request; WordPress enforces 10–100. */
+  private short defaultPerPage = 10;
+
+  /** Site credentials and derived API base URL. */
+  private WPSiteInfo siteInfo;
+
+  /** Last-known remote cache metadata (total pages/posts). */
   private WPCacheMeta wpCacheMeta;
-  private final Path cachePath;
-  private File cacheFile;
+
+  /** File system path to the JSON cache; {@code null} when running without a local cache. */
+  private Path cachePath;
+
+  /** Paginated REST URLs used during fetch/sync. */
   private List<String> linkList;
+
+  /** SSL context used for HTTPS requests. */
+  private final SSLContext sslContext;
+
+  /** Private delegating constructor that stores the SSL context. */
+  private WPCacheManager(SSLContext sslContext) {
+    this.sslContext = sslContext != null ? sslContext : SSLContexts.defaultSSLContext();
+  }
 
   /**
    * Initializes a new instance of the WPCacheManager class. If a local WordPress cache is found, it
-   * is loaded into memory, otherwise a new cache must be created using the {@link
-   * WPCacheManager#fetchCache(Path, boolean, boolean)} or {@link
-   * WPCacheManager#fetchCacheFromInstancePath(boolean, boolean)} if you already provided a path in
-   * the constructor.
+   * is loaded into memory, otherwise a new cache must be created using {@link
+   * WPCacheManager#fetchCache(Path)}, {@link WPCacheManager#fetchCacheFromInstancePath()}, or the
+   * first call to {@link #cacheSync()} if you already provided a path in the constructor.
    *
    * <p>A local cache is not created automatically since the client must handle any exceptions that
    * result from the cache creation process to ensure maximum control of client-specific flows,
    * exception handling, and logging styles.
    *
-   * @param fullyQualifiedDomainName the fully qualified domain name of the WordPress site
+   * @param wpURI URI of the WordPress site
    * @param username the username for the WordPress site
    * @param applicationPassword the application password for the WordPress site
-   * @param cachePath the path to the cache file
+   * @param cachePath path to the cache file, or {@code null} to run without a local cache
+   * @param sslContext SSL context for HTTPS requests, or {@code null} to use the default
    */
   public WPCacheManager(
-      @NotNull String fullyQualifiedDomainName,
+      @NotNull URI wpURI,
       @NotNull String username,
       @NotNull String applicationPassword,
-      @Nullable Path cachePath) {
-    this.siteInfo =
-        new WPSiteInfo(
-            fullyQualifiedDomainName.replaceAll("^https?:+//\\b", ""),
-            username,
-            applicationPassword);
+      @Nullable Path cachePath,
+      @Nullable SSLContext sslContext) {
+    this(sslContext);
+    this.siteInfo = new WPSiteInfo(wpURI, username, applicationPassword);
     this.cachePath = cachePath;
     if (cachePath != null) {
-      cacheFile = cachePath.toFile().exists() ? cachePath.toFile() : null;
       WPCacheMeta.from(cachePath).ifPresent(cacheMeta -> wpCacheMeta = cacheMeta);
     }
     String apiBaseUrl = siteInfo.apiBaseUrl();
-    wpSiteEngineLogger.info("Initialized WPCacheManager for site: {}", fullyQualifiedDomainName);
+    wpSiteEngineLogger.info("Initialized WPCacheManager for site: {}", wpURI.getHost());
     wpSiteEngineLogger.info("API Base Path set to: {}", apiBaseUrl);
   }
 
@@ -132,18 +154,15 @@ public class WPCacheManager {
    * needed, the cache will be ignored and the cachePath parameter will be set to null.
    *
    * <p>In case you want to create a cache in the current instance of the WPCacheManager, proceed to
-   * create the cache file using the {@link WPCacheManager#fetchCache(Path, boolean, boolean)}
-   * method.
+   * create the cache file using the {@link WPCacheManager#fetchCache(Path)} method.
    *
-   * @param fullyQualifiedDomainName the fully qualified domain name of the WordPress site
+   * @param wpURI URI of the WordPress site
    * @param username the username for the WordPress site
    * @param applicationPassword the application password for the WordPress site
    */
   public WPCacheManager(
-      @NotNull String fullyQualifiedDomainName,
-      @NotNull String username,
-      @NotNull String applicationPassword) {
-    this(fullyQualifiedDomainName, username, applicationPassword, null);
+      @NotNull URI wpURI, @NotNull String username, @NotNull String applicationPassword) {
+    this(wpURI, username, applicationPassword, null, null);
   }
 
   /**
@@ -153,11 +172,13 @@ public class WPCacheManager {
    * cachePath parameter will be set to null.
    *
    * @param siteInfo the site information object containing the fully qualified domain name,
-   *     username, and application password.
-   * @param cachePath an optional path to the cache file.
+   *     username, and application password
+   * @param cachePath an optional path to the cache file, or {@code null} for no local cache
+   * @param sslContext SSL context for HTTPS requests, or {@code null} to use the default
    */
-  public WPCacheManager(@NotNull WPSiteInfo siteInfo, Path cachePath) {
-    this(siteInfo.fullyQualifiedDomainName(), siteInfo.wpUser(), siteInfo.wpAppPass(), cachePath);
+  public WPCacheManager(
+      @NotNull WPSiteInfo siteInfo, @Nullable Path cachePath, @Nullable SSLContext sslContext) {
+    this(siteInfo.wpURI(), siteInfo.wpUser(), siteInfo.wpAppPass(), cachePath, sslContext);
   }
 
   /**
@@ -166,39 +187,39 @@ public class WPCacheManager {
    * parameter will be set to null.
    *
    * <p>In case you want to create a cache in the current instance of the WPCacheManager, proceed to
-   * create the cache file using the {@link WPCacheManager#fetchCache(Path, boolean, boolean)}
-   * method.
+   * create the cache file using the {@link WPCacheManager#fetchCache(Path)} method.
    *
    * @param siteInfo the site information object containing the fully qualified domain name,
-   *     username, and application password.
+   *     username, and application password
+   * @param sslContext SSL context for HTTPS requests, or {@code null} to use the default
    */
-  public WPCacheManager(@NotNull WPSiteInfo siteInfo) {
-    this(siteInfo.fullyQualifiedDomainName(), siteInfo.wpUser(), siteInfo.wpAppPass(), null);
+  public WPCacheManager(@NotNull WPSiteInfo siteInfo, @Nullable SSLContext sslContext) {
+    this(siteInfo.wpURI(), siteInfo.wpUser(), siteInfo.wpAppPass(), null, sslContext);
   }
 
   /**
-   * Connects to the WordPress REST API and returns the response. This a convenience method for this
-   * class, however, other methods that can carry out more functionality are available in the {@link
-   * net.ygbstudio.powerwp4j.services.RestClientService} class.
+   * Connects to the WordPress REST API and returns the response. This is a convenience method for
+   * this class; more capable operations are available in {@link
+   * net.ygbstudio.powerwp4j.services.RestClientService}.
    *
    * @param queryParams the query parameters to be used in the request
    * @param pathParam the path parameter to be used in the request
-   * @return an Optional containing the response from the WordPress REST API
+   * @return the HTTP response, or {@code null} if the request could not be executed
    */
-  @NotNull
-  public Optional<HttpResponse<String>> connectWP(
+  public @Nullable HttpResponse<String> connectWP(
       @NotNull Map<QueryParamEnum, String> queryParams, @NotNull WPRestPath pathParam) {
     String url = makeRequestURL(siteInfo.apiBaseUrl(), queryParams, pathParam);
     return HttpRequestService.connectGetWP(
-        url, siteInfo.wpUser(), siteInfo.wpAppPass(), wpSiteEngineLogger);
+        url, siteInfo.wpUser(), siteInfo.wpAppPass(), wpSiteEngineLogger, sslContext);
   }
 
   /**
-   * Creates a list of links to the WordPress REST API.
+   * Creates paginated links to the WordPress REST API.
    *
    * @param totalPages the total number of pages
-   * @param perPage the number of posts per page
-   * @return a list of links to the WordPress REST API
+   * @param perPage the number of posts per page; if {@code <= 0} the {@code per_page} query param
+   *     is omitted and the server default is used
+   * @return an unmodifiable list of request URLs, one per page
    */
   @Unmodifiable
   @NotNull
@@ -219,13 +240,10 @@ public class WPCacheManager {
    * Fetches the local cache file from the WordPress REST API.
    *
    * @param cachePath the path to the cache file
-   * @param overwriteCache whether to overwrite the cache file if it exists
-   * @param ignoreSSLHandshakeException whether to ignore SSL Handshake Exception
-   * @throws IOException if an I/O error occurs
+   * @throws CacheConstructionException if remote metadata cannot be obtained
+   * @throws CacheFileSystemException if the cache cannot be written to disk
    */
-  private void fetchCacheInternal(
-      @NotNull Path cachePath, boolean overwriteCache, boolean ignoreSSLHandshakeException)
-      throws IOException {
+  private void fetchCacheInternal(@NotNull Path cachePath) {
 
     if (Objects.isNull(linkList) || linkList.isEmpty()) {
       Runnable throwCacheException =
@@ -233,51 +251,57 @@ public class WPCacheManager {
             throw new CacheConstructionException(
                 () ->
                     "Failed to gather WordPress post metadata for "
-                        + siteInfo.fullyQualifiedDomainName()
+                        + siteInfo.wpURI().getHost()
                         + " Check your connection and try again");
           };
-      WPCacheMeta.updateCacheMeta(siteInfo, cachePath, ignoreSSLHandshakeException)
+      Optional.ofNullable(WPCacheMeta.updateCacheMeta(siteInfo, cachePath, sslContext))
           .ifPresentOrElse(
               cacheMeta -> {
                 wpCacheMeta = cacheMeta;
-                linkList = linkListCreator(wpCacheMeta.totalPages(), DEFAULT_PER_PAGE);
+                linkList = linkListCreator(wpCacheMeta.totalPages(), defaultPerPage);
               },
               throwCacheException);
     }
 
     String apiBaseUrl = siteInfo.apiBaseUrl();
     wpSiteEngineLogger.info("Processing cache links for {}", apiBaseUrl);
-    ArrayNode wpJsonArray =
-        fetchCacheFromInstancePath(linkList, null, 0, 0, null, null, ignoreSSLHandshakeException);
+    ArrayNode wpJsonArray = fetchCacheFromInstancePath(linkList, null, 0, 0, null, null);
 
-    cacheLock.lock();
-    try {
-      writeCacheFs(cachePath, wpJsonArray, overwriteCache, false);
-    } finally {
-      cacheLock.unlock();
+    boolean isCacheWritten = WPCacheWriter.fromPath(cachePath).write(wpJsonArray);
+
+    if (!isCacheWritten) {
+      File cacheFile = cachePath.toFile();
+      String errorMsg =
+          String.format("Unable to write cache file at %s", cacheFile.getAbsolutePath());
+      wpSiteEngineLogger.debug(
+          "Method 'fetchCacheInternal' cache at {} could not be written. Location is writable: {}",
+          cacheFile.getAbsolutePath(),
+          cacheFile.canWrite());
+      throw new CacheFileSystemException(errorMsg);
     }
-    cacheFile = cachePath.toFile();
   }
 
   /**
    * Fetches the JSON cache from the WordPress REST API.
    *
    * @param listOfLinks the list of links to fetch
-   * @param retryPred the predicate to retry on in case a specific condition is expected
-   * @param fetchCacheWithoutSSL whether to fetch the cache without SSL (useful in testing)
-   * @return the JSON cache as a single ArrayNode
+   * @param retryPred predicate to retry on when a specific condition is expected, or {@code null}
+   * @param retryAttempts number of retry attempts
+   * @param intervalTime delay between retries
+   * @param intervalUnit time unit for {@code intervalTime}, or {@code null} for no delay
+   * @param retryFailedMsg supplier for the log message when retries are exhausted, or {@code null}
+   * @return the aggregated JSON cache as a single {@link ArrayNode}
    */
   private ArrayNode fetchCacheFromInstancePath(
       @NotNull List<String> listOfLinks,
       @Nullable Predicate<ArrayNode> retryPred,
       int retryAttempts,
       int intervalTime,
-      TimeUnit intervalUnit,
-      Supplier<String> retryFailedMsg,
-      boolean fetchCacheWithoutSSL) {
+      @Nullable TimeUnit intervalUnit,
+      @Nullable Supplier<String> retryFailedMsg) {
     ObjectMapper mapper = JsonSupport.getMapper();
     BiFunction<HttpClient, String, CompletableFuture<ArrayNode>> procedureFunction =
-        getFetchProcedure(fetchCacheWithoutSSL);
+        getFetchProcedure();
     return HttpRequestService.linkProcessor(
         listOfLinks,
         procedureFunction,
@@ -287,26 +311,25 @@ public class WPCacheManager {
         intervalUnit,
         intervalTime,
         retryAttempts,
-        retryFailedMsg);
+        retryFailedMsg,
+        sslContext);
   }
 
   /**
-   * Applies the fetch procedure to the link list.
+   * Builds the async fetch procedure for a list of paginated links.
    *
-   * @param fetchCacheWithoutSSL whether to fetch the cache without SSL (useful in testing)
-   * @return the fetch procedure BiFunction
+   * @return a {@link BiFunction} that fetches a single link via {@link HttpClient#sendAsync} and
+   *     parses the body into an {@link ArrayNode}
    */
   @NotNull
   @Contract(pure = true)
-  private BiFunction<HttpClient, String, CompletableFuture<ArrayNode>> getFetchProcedure(
-      boolean fetchCacheWithoutSSL) {
+  private BiFunction<HttpClient, String, CompletableFuture<ArrayNode>> getFetchProcedure() {
 
     Function<String, HttpRequest> requestFunction =
         link -> {
-          String currentLink = fetchCacheWithoutSSL ? link.replaceFirst("https", "http") : link;
-          wpSiteEngineLogger.debug("Processing link -> {} ", currentLink);
+          wpSiteEngineLogger.debug("Processing link -> {} ", link);
           return HttpRequestService.buildWpGetRequest(
-              currentLink, siteInfo.wpUser(), siteInfo.wpAppPass(), wpSiteEngineLogger);
+              link, siteInfo.wpUser(), siteInfo.wpAppPass(), wpSiteEngineLogger);
         };
 
     return (client, link) ->
@@ -341,158 +364,80 @@ public class WPCacheManager {
   }
 
   /**
-   * Writes the local cache file from a JSON array to a file on the filesystem.
+   * Fetches the cache using the instance's {@link #cachePath}.
    *
-   * @param cachePath the path to the cache file
-   * @param wpJsonArray the JSON array to write
-   * @param overwriteCache whether to overwrite the cache file if it exists
-   * @param isUpdate whether the cache is being updated
-   * @throws IOException if an I/O error occurs
-   */
-  private void writeCacheFs(
-      @NotNull Path cachePath,
-      @NotNull ArrayNode wpJsonArray,
-      boolean overwriteCache,
-      boolean isUpdate)
-      throws IOException {
-    createCacheFile(cachePath, overwriteCache);
-    try (FileWriter writer = new FileWriter(cachePath.toFile(), StandardCharsets.UTF_8)) {
-      JsonSupport.getMapper().writerWithDefaultPrettyPrinter().writeValue(writer, wpJsonArray);
-    }
-
-    if (isUpdate) {
-      wpSiteEngineLogger.info("Cache has been updated at {}", cachePath);
-      return;
-    }
-
-    wpSiteEngineLogger.info("Cache created successfully at {}", cachePath);
-  }
-
-  /**
-   * Fetches the local cache file from the WordPress REST API.
+   * <p>Alternatively, if no cache exists the first call to {@link #cacheSync()} will create it
+   * automatically.
    *
-   * @param overwriteCache whether to overwrite the cache file if it exists
-   * @param ignoreSSLHandshakeException whether to ignore SSL Handshake Exception, useful for
-   *     testing purposes only or local environments.
-   * @throws IOException if an I/O error occurs
+   * @throws UnsupportedOperationException if no cache path was provided at construction
+   * @throws CacheConstructionException if remote metadata cannot be obtained
+   * @throws CacheFileSystemException if the cache cannot be written to disk
    */
-  public void fetchCacheFromInstancePath(
-      boolean overwriteCache, boolean ignoreSSLHandshakeException) throws IOException {
+  public void fetchCacheFromInstancePath() {
     if (cachePath == null)
       throw new UnsupportedOperationException(
           "Unable to fetch cache without a cache path in this instance. Provide a cache path and try again.");
-    fetchCacheInternal(cachePath, overwriteCache, ignoreSSLHandshakeException);
+    fetchCacheInternal(cachePath);
   }
 
   /**
-   * Fetches the local cache file from the WordPress REST API.
+   * Fetches the cache to an explicit file path.
    *
-   * @param cachePath the path to the cache file
-   * @param overwriteCache whether to overwrite the cache file if it exists
-   * @param ignoreSSLHandshakeException whether to ignore SSL Handshake Exception, useful for
-   *     testing purposes only or local environments.
-   * @throws IOException if an I/O error occurs
+   * <p>Alternatively, if no cache exists the first call to {@link #cacheSync()} will create it
+   * automatically when an instance path has been set.
+   *
+   * @param cachePath the destination path for the cache file
+   * @throws CacheConstructionException if remote metadata cannot be obtained
+   * @throws CacheFileSystemException if the cache cannot be written to disk
    */
-  public void fetchCache(
-      @NotNull Path cachePath, boolean overwriteCache, boolean ignoreSSLHandshakeException)
-      throws IOException {
-    fetchCacheInternal(cachePath, overwriteCache, ignoreSSLHandshakeException);
+  public void fetchCache(@NotNull Path cachePath) {
+    fetchCacheInternal(cachePath);
   }
 
   /**
-   * Creates or overwrites a cache file in the local classpath/filesystem that will contain the
-   * local cache of a WordPress site. Overwrites must be specified by the user in any of the
-   * overloaded methods in this class.
+   * Refreshes instance metadata from the remote site.
    *
-   * @param cachePath the path to the cache file
-   * @param overwriteCache whether to overwrite the cache file if it exists
+   * @param forceUpdate if {@code true} always refreshes; otherwise only if {@code wpCacheMeta} is
+   *     {@code null}
+   * @throws CacheMetaDataException if remote metadata cannot be obtained
    */
-  private void createCacheFile(@NotNull Path cachePath, boolean overwriteCache) {
-    TypedTrigger<Exception> exceptionLogging =
-        ex ->
-            wpSiteEngineLogger.debug(
-                "Rethrowing {} caused by: {} as {} while trying to create a new cache file",
-                ex.getClass().getSimpleName(),
-                ex.getMessage(),
-                CacheConstructionException.class);
-
-    Function<File, String> cacheExMsg =
-        file -> String.format("Unable to create a file at %s", file.getAbsolutePath());
-
-    File cachePathFile = cachePath.toFile();
-    if (cachePathFile.exists() && overwriteCache) {
-      try {
-        Files.delete(cachePath);
-      } catch (IOException ioEx) {
+  private void updateInstanceMetadata(boolean forceUpdate) {
+    if (forceUpdate || wpCacheMeta == null) {
+      WPCacheMeta newCacheMeta = WPCacheMeta.updateCacheMeta(siteInfo, cachePath, sslContext);
+      if (newCacheMeta == null) {
         wpSiteEngineLogger.debug(
-            "Rethrowing {} as {} while trying to overwrite a cache file",
-            ioEx.getClass().getSimpleName(),
-            CacheConstructionException.class);
-        throw new CacheConstructionException(cacheExMsg.apply(cachePathFile));
+            "Response to {} returned a 'null' value. Throwing CacheMetadataException...",
+            siteInfo.wpURI().getHost());
+        throw new CacheMetaDataException(
+            "Failed cache metadata update. Check your internet connection.");
       }
-    } else if (!cachePathFile.exists()) {
-      try {
-        Files.createFile(cachePath);
-        WPCacheMeta.updateCacheMeta(siteInfo, cachePath, false);
-      } catch (IOException ioEx) {
-        exceptionLogging.activate(ioEx);
-        throw new CacheConstructionException(cacheExMsg.apply(cachePathFile));
-      }
+      wpCacheMeta = newCacheMeta;
     }
   }
 
   /**
-   * Returns a FileReader for the cache file after verifying its existence, in case it does not
-   * exist, returns null.
+   * Synchronizes the local cache with the WordPress site. Assumes incremental changes and uses
+   * sorting pipelines to compute deltas efficiently; not suited for large rewrites.
    *
-   * @return a FileReader for the cache file, or null if the cache file does not exist
-   * @throws IOException if an I/O error occurs
-   */
-  @Nullable
-  private FileReader getCacheReader() throws IOException {
-    return cacheFile.exists() ? new FileReader(cacheFile, StandardCharsets.UTF_8) : null;
-  }
-
-  /**
-   * Returns a FileWriter for the cache file after verifying its existence, in case it does not
-   * exist, returns null.
+   * <p>If no cache file exists at {@link #cachePath}, the first invocation creates it via {@link
+   * #fetchCacheFromInstancePath()} and returns {@code true}.
    *
-   * @return a FileWriter for the cache file, or null if the cache file does not exist
-   * @throws IOException if an I/O error occurs
+   * @return {@code true} if the cache was created or updated, {@code false} if it was already
+   *     up-to-date
+   * @throws CacheFileSystemException if {@link #cachePath} is {@code null} or not set
+   * @throws CacheMetaDataException if remote metadata cannot be refreshed
+   * @throws CacheConstructionException if the initial cache creation fails
+   * @throws CacheFileSystemException if the cache file cannot be written
    */
-  @Nullable
-  private FileWriter getCacheWriter() throws IOException {
-    return cacheFile.exists() ? new FileWriter(cacheFile, StandardCharsets.UTF_8) : null;
-  }
+  public boolean cacheSync() {
 
-  /**
-   * Synchronizes the cache file with the WordPress site. It assumes incremental cache changes will
-   * be taking place, and that is why this method relies heavily on sorting pipelines as the deltas
-   * are meant to be limited.
-   *
-   * @see #cacheSync()
-   * @param ignoreSSL whether to ignore SSL errors, useful for testing purposes or local
-   *     environments <strong>(do not use in production)</strong>.
-   * @return true if the cache was successfully synchronized, false if the cache is up-to-date.
-   * @throws InterruptedException if the thread is interrupted
-   */
-  public boolean cacheSync(boolean ignoreSSL) throws InterruptedException {
-    Supplier<String> notFoundMsg = () -> "Cache file does not exist at " + cachePath;
-    TypedTrigger<Exception> ioExceptionLogging =
-        ex ->
-            wpSiteEngineLogger.debug(
-                "Failed to read cache file: {} caused by: {}",
-                ex.getMessage(),
-                ex.getCause() != null ? ex.getCause().getMessage() : "no cause");
+    if (cachePath == null)
+      throw new CacheFileSystemException(
+          "Instance cache path has not been set. Use the setter or use a constructor that takes one.");
 
-    TypedTrigger<String> throwCacheException =
-        exMsg -> {
-          throw new CacheFileSystemException(() -> "Failed to read cache file: " + exMsg);
-        };
+    if (!cachePath.toFile().exists()) fetchCacheFromInstancePath();
 
-    Trigger updateCache = () -> WPCacheMeta.updateCacheMeta(siteInfo, cachePath, ignoreSSL);
-
-    if (wpCacheMeta == null) updateCache.activate();
+    updateInstanceMetadata(false);
 
     WPCacheMeta cacheMetaOld =
         new WPCacheMeta(
@@ -500,36 +445,28 @@ public class WPCacheManager {
             wpCacheMeta.totalPosts(),
             LocalDate.ofInstant(Instant.now(), ZoneOffset.UTC));
 
-    updateCache.activate();
+    updateInstanceMetadata(true);
 
-    ArrayNode fromCache = null;
-    try (FileReader cacheReader = getCacheReader()) {
-      if (cacheReader == null) {
-        wpSiteEngineLogger.debug(notFoundMsg.get());
-        throw new FileNotFoundException(notFoundMsg.get());
-      }
-      fromCache = jsonReader(cacheReader, ArrayNode.class);
-    } catch (IOException ieEx) {
-      ioExceptionLogging.activate(ieEx);
-      throwCacheException.activate(ieEx.getMessage());
-    }
+    ArrayNode fromCache = WPCacheReader.fromPath(cachePath).getArrayNodeCache();
 
-    long nodeDiff = wpCacheMeta.totalPosts() - cacheMetaOld.totalPosts();
-    long pageDiff = wpCacheMeta.totalPages() - cacheMetaOld.totalPages();
-    wpSiteEngineLogger.info("Node diff: {}", nodeDiff);
-    wpSiteEngineLogger.info("Page diff: {}", pageDiff);
+    WPCacheDelta wpDelta = WPCacheDelta.fromMetadata(wpCacheMeta, cacheMetaOld);
+    wpSiteEngineLogger.debug("Node diff: {}", wpDelta.nodeDiff());
+    wpSiteEngineLogger.debug("Page diff: {}", wpDelta.pageDiff());
 
-    if (nodeDiff == 0 && pageDiff == 0) {
-      wpSiteEngineLogger.info("{} Cache is up-to-date", siteInfo.fullyQualifiedDomainName());
+    if (wpDelta.nodeDiff() == 0 && wpDelta.pageDiff() == 0) {
+      wpSiteEngineLogger.info("{} Cache is up-to-date", siteInfo.wpURI().getHost());
       return false;
     }
 
     linkList =
-        linkListCreator(wpCacheMeta.totalPages(), DEFAULT_PER_PAGE).stream()
+        linkListCreator(wpCacheMeta.totalPages(), defaultPerPage).stream()
             // Each page has a default number of items and,
             // if the number of pages is less than the default number of items,
             // those may be contained in the last page
-            .limit(nodeDiff < DEFAULT_PER_PAGE && pageDiff == 0 ? pageDiff + 1 : pageDiff)
+            .limit(
+                wpDelta.nodeDiff() < defaultPerPage && wpDelta.pageDiff() == 0
+                    ? 1
+                    : wpDelta.pageDiff())
             .toList();
 
     Comparator<JsonNode> jsonNodeComparator =
@@ -565,37 +502,38 @@ public class WPCacheManager {
                 3,
                 2,
                 TimeUnit.SECONDS,
-                () -> "Failed to fetch new cache pages. Reached maximum retry attempts",
-                ignoreSSL)
+                () -> "Failed to fetch new cache pages. Reached maximum retry attempts")
             .valueStream()
             .sorted(jsonNodeComparator.reversed())
-            .limit(nodeDiff)
+            .limit(wpDelta.nodeDiff())
             .toList();
 
     fromCache.addAll(updatedPosts);
-
-    cacheLock.lock();
-    try {
-      writeCacheFs(cacheFile.toPath(), fromCache, true, true);
-    } catch (IOException ioEx) {
-      wpSiteEngineLogger.debug(
-          "Caught {} caused by {}", ioEx.getClass().getSimpleName(), ioEx.getMessage());
-      throw new CacheFileSystemException(() -> "Failed to write cache file: " + ioEx.getMessage());
-    } finally {
-      cacheLock.unlock();
-    }
-    return true;
+    return WPCacheWriter.fromPath(cachePath).write(fromCache);
   }
 
   /**
-   * Performs a cache synchronization between the local cache file and the WordPress REST API.
+   * Overrides the pagination size for REST requests.
    *
-   * @return {@code true} if the cache was updated, {@code false} otherwise
-   * @throws InterruptedException if the thread is interrupted while waiting to fetch new cache
-   *     pages
+   * @param defaultPerPage number of posts per page, must be between 10 and 100 inclusive
+   * @throws IllegalArgumentException if {@code defaultPerPage} is outside [10, 100]
    */
-  public boolean cacheSync() throws InterruptedException {
-    return cacheSync(false);
+  public void overrideDefaultPerPage(short defaultPerPage) {
+    if (defaultPerPage > 100 || defaultPerPage < 10)
+      throw new IllegalArgumentException(
+          "WordPress can retrieve a maximum of 100 posts per page and a minimum of 10");
+    this.defaultPerPage = defaultPerPage;
+  }
+
+  /**
+   * Sets the file system path for the JSON cache.
+   *
+   * <p>If no cache exists at the new path, the next {@link #cacheSync()} call will create it.
+   *
+   * @param cachePath the new cache file path, or {@code null} to clear
+   */
+  public void setCachePath(Path cachePath) {
+    this.cachePath = cachePath;
   }
 
   /**
