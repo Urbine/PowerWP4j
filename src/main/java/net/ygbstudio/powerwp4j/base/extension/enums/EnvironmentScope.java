@@ -35,13 +35,13 @@ public enum EnvironmentScope implements FriendlyEnum {
   /** {@code wp.appPass} property key. */
   WP_APPLICATION_PASS_PROP("wp.appPass"),
   /** {@code wp.fqdn} property key. */
-  WP_FULLY_QUALIFIED_DOMAIN_NAME_PROP("wp.fqdn"),
+  WP_BASE_URI_PROP("wp.baseURI"),
   /** {@code WP_USER} environment variable. */
   WP_USER_ENV("WP_USER"),
   /** {@code WP_APP_PASS} environment variable. */
   WP_APPLICATION_PASS_ENV("WP_APP_PASS"),
   /** {@code WP_FQDN} environment variable. */
-  WP_FULLY_QUALIFIED_DOMAIN_NAME_ENV("WP_FQDN");
+  WP_BASE_URI_ENV("WP_BASE_URI");
 
   private final String value;
 

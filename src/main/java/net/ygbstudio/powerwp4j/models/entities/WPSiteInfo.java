@@ -22,20 +22,38 @@ package net.ygbstudio.powerwp4j.models.entities;
 
 import static net.ygbstudio.powerwp4j.utils.Helpers.getPropertiesFromResources;
 
+import java.net.URI;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import net.ygbstudio.powerwp4j.base.extension.enums.EnvironmentScope;
+import net.ygbstudio.powerwp4j.exceptions.LocalConfigurationException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * A record that represents basic site information required to interact with a WordPress site.
+ * Holds the site information required to interact with a WordPress site.
  *
- * @param fullyQualifiedDomainName the fully qualified domain name of the WordPress site
- * @param wpUser the username for the WordPress site
- * @param wpAppPass the application password for the WordPress site
+ * <p>Stores the WordPress base {@link URI} and application-password credentials.
  */
-public record WPSiteInfo(String fullyQualifiedDomainName, String wpUser, String wpAppPass) {
+public final class WPSiteInfo {
+
+  private final URI wpURI;
+  private final String wpUser;
+  private final String wpAppPass;
+
+  /**
+   * Creates site info from a WordPress base URI and credentials.
+   *
+   * @param wpURI URI of the WordPress site (host, scheme and port are extracted)
+   * @param wpUser username for the WordPress site
+   * @param wpAppPass application password for the WordPress site
+   */
+  public WPSiteInfo(@NotNull URI wpURI, @NotNull String wpUser, @NotNull String wpAppPass) {
+    this.wpURI = wpURI;
+    this.wpUser = wpUser;
+    this.wpAppPass = wpAppPass;
+  }
 
   /**
    * Returns the base URL of the WordPress REST API.
@@ -44,39 +62,99 @@ public record WPSiteInfo(String fullyQualifiedDomainName, String wpUser, String 
    */
   @Contract(pure = true)
   public @NotNull String apiBaseUrl() {
-    return String.format("https://%s/wp-json/wp/v2", this.fullyQualifiedDomainName);
+    int port = wpURI.getPort();
+    return String.format(
+        "%s://%s%s/wp-json/wp/v2",
+        wpURI.getScheme(), wpURI.getHost(), port == -1 ? "" : ":" + port);
   }
 
   /**
-   * Returns an Optional of {@link WPSiteInfo} loaded from the specified configuration resource
-   * properties file.
+   * Loads site info from a configuration resource properties file.
    *
-   * @param fileName the name of the resource file to load properties from
-   * @return an Optional of {@link WPSiteInfo} loaded from the specified configuration resource file
+   * @param fileName name of the resource file to load properties from
+   * @return site info loaded from the resource
+   * @throws LocalConfigurationException if the resource is missing or required properties are
+   *     absent
    */
-  public static Optional<WPSiteInfo> fromConfigResource(String fileName) {
+  public static @NotNull WPSiteInfo fromConfigResource(String fileName) {
     Optional<Properties> props = getPropertiesFromResources(fileName);
-    return props.map(
-        appProps ->
-            new WPSiteInfo(
-                appProps.getProperty(EnvironmentScope.WP_FULLY_QUALIFIED_DOMAIN_NAME_PROP.value()),
-                appProps.getProperty(EnvironmentScope.WP_USER_PROP.value()),
-                appProps.getProperty(EnvironmentScope.WP_APPLICATION_PASS_PROP.value())));
+    if (props.isPresent()) {
+      Properties appProps = props.get();
+      String wpUri = appProps.getProperty(EnvironmentScope.WP_BASE_URI_PROP.value());
+      String wpUser = appProps.getProperty(EnvironmentScope.WP_USER_PROP.value());
+      String wpAppPass = appProps.getProperty(EnvironmentScope.WP_APPLICATION_PASS_PROP.value());
+
+      if (wpUri == null || wpUser == null || wpAppPass == null)
+        throw new LocalConfigurationException(
+            "Failed to parse configuration: 'wp.baseURI', 'wp.user', and 'wp.appPass' from classpath resource");
+
+      return new WPSiteInfo(URI.create(wpUri), wpUser, wpAppPass);
+    } else {
+      throw new LocalConfigurationException("Missing configuration properties file in classpath");
+    }
   }
 
   /**
-   * Returns a {@link WPSiteInfo} loaded from the environment variables outlined in {@link
-   * EnvironmentScope}.
+   * Loads site info from environment variables defined in {@link EnvironmentScope}.
    *
-   * @return a {@link WPSiteInfo} loaded from the environment variables
+   * @return site info loaded from the environment
+   * @throws LocalConfigurationException if any required environment variable is unset
    */
-  public static Optional<WPSiteInfo> fromEnv() {
-    String fqdn = System.getenv(EnvironmentScope.WP_FULLY_QUALIFIED_DOMAIN_NAME_ENV.value());
+  public static @NotNull WPSiteInfo fromEnv() {
+    String uri = System.getenv(EnvironmentScope.WP_BASE_URI_ENV.value());
     String wpUser = System.getenv(EnvironmentScope.WP_USER_ENV.value());
     String wpAppPass = System.getenv(EnvironmentScope.WP_APPLICATION_PASS_ENV.value());
-    if (fqdn == null || wpUser == null || wpAppPass == null) {
-      return Optional.empty();
-    }
-    return Optional.of(new WPSiteInfo(fqdn, wpUser, wpAppPass));
+    if (uri == null || wpUser == null || wpAppPass == null)
+      throw new LocalConfigurationException(
+          "Unset either or all env vars: 'WP_BASE_URI', 'WP_USER', or 'WP_APP_PASS'");
+
+    return new WPSiteInfo(URI.create(uri), wpUser, wpAppPass);
+  }
+
+  /**
+   * Returns the WordPress base URI.
+   *
+   * @return base URI of the WordPress site
+   */
+  public URI wpURI() {
+    return wpURI;
+  }
+
+  /**
+   * Returns the WordPress username.
+   *
+   * @return application username
+   */
+  public String wpUser() {
+    return wpUser;
+  }
+
+  /**
+   * Returns the WordPress application password.
+   *
+   * @return application password
+   */
+  public String wpAppPass() {
+    return wpAppPass;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) return true;
+    if (obj == null || obj.getClass() != this.getClass()) return false;
+    var that = (WPSiteInfo) obj;
+    return Objects.equals(this.wpURI, that.wpURI)
+        && Objects.equals(this.wpUser, that.wpUser)
+        && Objects.equals(this.wpAppPass, that.wpAppPass);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(wpURI, wpUser, wpAppPass);
+  }
+
+  @Override
+  public String toString() {
+    return "WPSiteInfo{" + "wpURI=" + wpURI + ", wpUser='" + wpUser + '\'' + '}';
   }
 }
