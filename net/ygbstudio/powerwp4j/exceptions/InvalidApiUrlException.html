@@ -105,6 +105,8 @@ loadScripts(document, 'script');</script>
 <div class="block">Exception thrown when an invalid API URL is provided and any of the internal methods of PowerWP4j
  detect a <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/URISyntaxException.html" title="class or interface in java.net" class="external-link"><code>URISyntaxException</code></a>.</div>
 <dl class="notes">
+<dt>Since:</dt>
+<dd>0.1.0</dd>
 <dt>See Also:</dt>
 <dd>
 <ul class="tag-list">
@@ -161,6 +163,10 @@ loadScripts(document, 'script');</script>
 <h3>InvalidApiUrlException</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">InvalidApiUrlException</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message)</span></div>
 <div class="block">Creates a new invalid API URL exception with the given message.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>message</code> - the detail message explaining the cause of the failure.</dd>
+</dl>
 </section>
 </li>
 <li>
@@ -169,6 +175,11 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">InvalidApiUrlException</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message,
  <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/URISyntaxException.html" title="class or interface in java.net" class="external-link">URISyntaxException</a>&nbsp;uriSyntaxEx)</span></div>
 <div class="block">Creates a new invalid API URL exception with the given message and cause.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>message</code> - the detail message explaining the cause of the failure.</dd>
+<dd><code>uriSyntaxEx</code> - the upstream <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/net/URISyntaxException.html" title="class or interface in java.net" class="external-link"><code>URISyntaxException</code></a> detected while parsing the API URL.</dd>
+</dl>
 </section>
 </li>
 </ul>

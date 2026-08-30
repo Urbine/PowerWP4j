@@ -104,6 +104,8 @@ loadScripts(document, 'script');</script>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/RuntimeException.html" title="class or interface in java.lang" class="external-link">RuntimeException</a></span></div>
 <div class="block">Exception thrown when there is an error during or before a media upload procedure.</div>
 <dl class="notes">
+<dt>Since:</dt>
+<dd>0.1.0</dd>
 <dt>Author:</dt>
 <dd>Yoham Gabriel B. @ YGBStudio</dd>
 <dt>See Also:</dt>
@@ -161,6 +163,10 @@ loadScripts(document, 'script');</script>
 <h3>MediaUploadException</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">MediaUploadException</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message)</span></div>
 <div class="block">Creates a new media upload exception with the given message.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>message</code> - the detail message explaining the cause of the failure.</dd>
+</dl>
 </section>
 </li>
 <li>
@@ -169,6 +175,11 @@ loadScripts(document, 'script');</script>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">MediaUploadException</span><wbr><span class="parameters">(@NotNull
  @NotNull <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Supplier.html" title="class or interface in java.util.function" class="external-link">Supplier</a>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;message)</span></div>
 <div class="block">Creates a new media upload exception with a lazily computed message.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>message</code> - a supplier that lazily computes the detail message explaining the cause of the
+     failure.</dd>
+</dl>
 </section>
 </li>
 </ul>
