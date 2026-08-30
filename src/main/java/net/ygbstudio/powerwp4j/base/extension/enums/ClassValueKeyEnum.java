@@ -37,5 +37,6 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
  * <p>Example: {@code "tags": [12, 34, 56]} or {@code "categories": [2, 5]}
  *
  * @author Yoham Gabriel B. @YGBStudio
+ * @since 0.1.0
  */
 public interface ClassValueKeyEnum extends CacheKeyEnum {}

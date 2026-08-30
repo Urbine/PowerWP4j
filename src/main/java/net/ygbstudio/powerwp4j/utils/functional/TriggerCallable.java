@@ -29,6 +29,7 @@ package net.ygbstudio.powerwp4j.utils.functional;
  * explicit exception handling while using it.
  *
  * @see Trigger
+ * @since 0.1.0
  * @see TypedTrigger
  * @param <R> the type of the result of the callable
  */

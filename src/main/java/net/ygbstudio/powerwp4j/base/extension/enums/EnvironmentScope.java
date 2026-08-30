@@ -28,6 +28,7 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
  * representation of the enum constants.
  *
  * @author Yoham Gabriel @ YGBStudio
+ * @since 0.1.0
  */
 public enum EnvironmentScope implements FriendlyEnum {
   /** {@code wp.user} property key. */

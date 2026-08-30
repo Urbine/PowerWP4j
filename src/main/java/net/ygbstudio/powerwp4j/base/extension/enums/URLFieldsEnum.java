@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * can be appended to a URL to fetch that field.
  *
  * @see FriendlyEnum
+ * @since 0.1.0
  * @author Yoham Gabriel B. @YGBStudio
  */
 public non-sealed interface URLFieldsEnum extends FriendlyEnum {

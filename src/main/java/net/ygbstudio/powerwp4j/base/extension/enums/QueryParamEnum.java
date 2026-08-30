@@ -30,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
  * a means to provide your own query parameters to the WPCacheManager safely.
  *
  * @see FriendlyEnum
+ * @since 0.1.0
  * @author Yoham Gabriel B. @YGBStudio
  */
 public non-sealed interface QueryParamEnum extends FriendlyEnum {

@@ -43,6 +43,8 @@ import tools.jackson.databind.json.JsonMapper;
  * <p>This class exists to reuse common JSON operations across different classes without code
  * duplication. It also provides a pre-configured ObjectMapper instance for reuse, consistency and
  * maximum performance gain.
+ *
+ * @since 0.1.0
  */
 public final class JsonSupport {
 

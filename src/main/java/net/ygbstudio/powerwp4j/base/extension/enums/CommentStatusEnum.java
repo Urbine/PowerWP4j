@@ -25,5 +25,6 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
  * built-in comment statuses.
  *
  * @see FriendlyEnum
+ * @since 0.1.0
  */
 public non-sealed interface CommentStatusEnum extends FriendlyEnum {}

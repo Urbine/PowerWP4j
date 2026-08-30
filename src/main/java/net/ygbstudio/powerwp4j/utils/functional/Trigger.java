@@ -29,6 +29,7 @@ package net.ygbstudio.powerwp4j.utils.functional;
  * {@link Runnable} but its intent differs from it.
  *
  * @see TypedTrigger
+ * @since 0.1.0
  * @author Yoham Gabriel B.
  */
 @FunctionalInterface

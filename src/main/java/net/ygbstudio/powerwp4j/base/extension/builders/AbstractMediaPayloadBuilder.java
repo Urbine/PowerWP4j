@@ -26,6 +26,7 @@ import tools.jackson.databind.JsonNode;
  * Abstract builder for media attachment payloads.
  *
  * @see AbstractPayloadBuilder
+ * @since 0.1.0
  * @param <T> the concrete media payload builder subtype
  */
 public abstract class AbstractMediaPayloadBuilder<T extends AbstractMediaPayloadBuilder<T>> {

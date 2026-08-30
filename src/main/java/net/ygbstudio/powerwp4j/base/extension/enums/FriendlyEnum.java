@@ -28,6 +28,8 @@ import org.jetbrains.annotations.Contract;
  * string to be used in the API. By extending this interface, enums become more user-friendly and
  * easier to work with. Only top-level enum types provided by PowerWP4j implement this interface to
  * avoid misuse.
+ *
+ * @since 0.1.0
  */
 public sealed interface FriendlyEnum
     permits CacheKeyEnum,

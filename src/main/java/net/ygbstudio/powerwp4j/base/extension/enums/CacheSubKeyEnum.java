@@ -36,5 +36,6 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
  * strategies.
  *
  * @see FriendlyEnum
+ * @since 0.1.0
  */
 public non-sealed interface CacheSubKeyEnum extends FriendlyEnum {}

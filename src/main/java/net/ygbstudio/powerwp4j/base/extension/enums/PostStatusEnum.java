@@ -24,5 +24,6 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
  * Interface for post status enums that provide a unified type for addition of custom post statuses.
  *
  * @see FriendlyEnum
+ * @since 0.1.0
  */
 public non-sealed interface PostStatusEnum extends FriendlyEnum {}

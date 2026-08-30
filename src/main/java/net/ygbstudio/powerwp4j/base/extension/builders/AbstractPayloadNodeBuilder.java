@@ -51,6 +51,7 @@ import tools.jackson.databind.node.ObjectNode;
  * {@link net.ygbstudio.powerwp4j.builders} package to demonstrate its suggested usage.
  *
  * @param <T> The type of the concrete builder subclass.
+ * @since 0.1.0
  */
 public abstract class AbstractPayloadNodeBuilder<T extends AbstractPayloadNodeBuilder<T>> {
   /** Backing JSON object used to assemble the payload. */

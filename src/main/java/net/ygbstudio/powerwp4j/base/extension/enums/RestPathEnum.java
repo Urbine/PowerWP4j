@@ -26,6 +26,7 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
  * the WPCacheManager safely.
  *
  * @see FriendlyEnum
+ * @since 0.1.0
  * @author Yoham Gabriel B. @YGBStudio
  */
 public non-sealed interface RestPathEnum extends FriendlyEnum {}

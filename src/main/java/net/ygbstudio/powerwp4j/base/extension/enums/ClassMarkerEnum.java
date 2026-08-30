@@ -40,5 +40,6 @@ package net.ygbstudio.powerwp4j.base.extension.enums;
  * <p>Example: {@code "tag-python", "category-tutorial", "status-published"}
  *
  * @author Yoham Gabriel B. @YGBStudio
+ * @since 0.1.0
  */
 public non-sealed interface ClassMarkerEnum extends FriendlyEnum {}

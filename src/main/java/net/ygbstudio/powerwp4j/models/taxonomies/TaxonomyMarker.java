@@ -34,6 +34,7 @@ import net.ygbstudio.powerwp4j.base.extension.enums.ClassMarkerEnum;
  * <p>These markers help extract and group related metadata from posts.
  *
  * @author Yoham Gabriel @ YGBStudio
+ * @since 0.1.0
  */
 public enum TaxonomyMarker implements ClassMarkerEnum {
   /** Tag taxonomy marker. */

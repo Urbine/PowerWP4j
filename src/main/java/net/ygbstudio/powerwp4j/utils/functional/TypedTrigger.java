@@ -30,6 +30,7 @@ package net.ygbstudio.powerwp4j.utils.functional;
  *
  * @param <T> the type of the argument
  * @see Trigger
+ * @since 0.1.0
  * @author Yoham Gabriel B.
  */
 @FunctionalInterface

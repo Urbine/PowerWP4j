@@ -31,6 +31,7 @@ import net.ygbstudio.powerwp4j.base.extension.enums.ClassValueKeyEnum;
  * <p>Example: {@code "tags": [12, 34, 56]} {@code "categories": [2, 5]}
  *
  * @author Yoham Gabriel @ YGBStudio
+ * @since 0.1.0
  */
 public enum TaxonomyValues implements ClassValueKeyEnum {
   /** Category term IDs. */

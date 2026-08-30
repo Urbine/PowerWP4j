@@ -45,6 +45,7 @@ import tools.jackson.databind.JsonNode;
  * need after a clean start.
  *
  * @see FriendlyEnum
+ * @since 0.1.0
  * @param <T> the concrete payload builder subtype
  */
 public abstract class AbstractPayloadBuilder<T extends AbstractPayloadBuilder<T>> {

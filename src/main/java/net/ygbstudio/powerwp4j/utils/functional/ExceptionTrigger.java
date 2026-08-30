@@ -30,6 +30,7 @@ package net.ygbstudio.powerwp4j.utils.functional;
  * handling would clutter the code, such as in lambda expressions or method references.
  *
  * @see Trigger
+ * @since 0.1.0
  * @see ExceptionCauseTrigger
  * @author Yoham Gabriel B.
  */

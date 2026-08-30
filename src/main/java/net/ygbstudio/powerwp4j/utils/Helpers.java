@@ -52,6 +52,8 @@ import org.slf4j.LoggerFactory;
  *
  * <p>This class contains methods that can be used throughout the application to perform common
  * tasks. It is designed to be a utility class, so it should not be instantiated.
+ *
+ * @since 0.1.0
  */
 public final class Helpers {
 
