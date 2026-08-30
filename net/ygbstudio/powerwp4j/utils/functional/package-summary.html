@@ -72,12 +72,7 @@ loadScripts(document, 'script');</script>
 <section class="package-description" id="package-description">
 <div class="block">Tiny functional helpers.
 
- <p>Defines lightweight functional interfaces used to keep service and engine code concise: <a href="Trigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>Trigger</code></a>, <a href="TypedTrigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>TypedTrigger</code></a>, <a href="TriggerCallable.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>TriggerCallable</code></a>, 
-<details class="invalid-tag">
-<summary>invalid reference</summary>
-<pre><code>net.ygbstudio.powerwp4j.utils.functional.ExceptionTrigger</code></pre>
-</details>
- and <a href="ExceptionCauseTrigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>ExceptionCauseTrigger</code></a>. They avoid duplication around
+ <p>Defines lightweight functional interfaces used to keep service and engine code concise: <a href="Trigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>Trigger</code></a>, <a href="TypedTrigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>TypedTrigger</code></a>, <a href="TriggerCallable.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>TriggerCallable</code></a>, <a href="ExceptionTrigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>ExceptionTrigger</code></a> and <a href="ExceptionCauseTrigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>ExceptionCauseTrigger</code></a>. They avoid duplication around
  retry, exception wrapping and logging.</div>
 <dl class="notes">
 <dt>Since:</dt>
@@ -110,18 +105,23 @@ loadScripts(document, 'script');</script>
 <div class="block">Functional interface that represents a trigger function that throws a checked exception of type
  <code>T</code> when activated.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Trigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional">Trigger</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="ExceptionTrigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional">ExceptionTrigger</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">Functional interface that represents a trigger function that throws a checked exception when
+ activated.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Trigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional">Trigger</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">Interface for representing a trigger function that can be activated lazily in context were code
  reuse is desired and enforced.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="TriggerCallable.html" title="interface in net.ygbstudio.powerwp4j.utils.functional">TriggerCallable</a>&lt;R&gt;</div>
-<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="TriggerCallable.html" title="interface in net.ygbstudio.powerwp4j.utils.functional">TriggerCallable</a>&lt;R&gt;</div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">TriggerCallable is a functional interface that represents a callable that can be triggered
  multiple times and returns a result of type <code>R</code>.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="TypedTrigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional">TypedTrigger</a>&lt;T&gt;</div>
-<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="TypedTrigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional">TypedTrigger</a>&lt;T&gt;</div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">Typed variant of the <a href="Trigger.html" title="interface in net.ygbstudio.powerwp4j.utils.functional"><code>Trigger</code></a> interface for representing an action that can be activated
  at a later point in the program with a specific argument supplied to a function to be executed.</div>
 </div>
