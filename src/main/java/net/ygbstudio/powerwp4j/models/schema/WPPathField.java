@@ -26,14 +26,22 @@ import net.ygbstudio.powerwp4j.base.extension.enums.URLFieldsEnum;
  * Enum representing the fields that can be requested in a WordPress REST API path.
  *
  * <p>By default, these field values do not include a trailing slash.
+ *
+ * @since 0.1.0
  */
 public enum WPPathField implements URLFieldsEnum {
   // fields are comma-separated in the URL after the fields_base value.
+  /** Base query parameter prefix used for requesting specific fields. */
   FIELDS_BASE("?_fields="),
+  /** Field identifier for the author. */
   FIELD_AUTHOR("author"),
+  /** Field identifier for the ID. */
   FIELD_ID("id"),
+  /** Field identifier for the excerpt. */
   FIELD_EXCERPT("excerpt"),
+  /** Field identifier for the title. */
   FIELD_TITLE("title"),
+  /** Field identifier for the link. */
   FIELD_LINK("link");
 
   private final String value;

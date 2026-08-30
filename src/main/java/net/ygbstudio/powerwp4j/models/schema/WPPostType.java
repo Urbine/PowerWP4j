@@ -29,11 +29,15 @@ import net.ygbstudio.powerwp4j.base.extension.enums.PostTypeEnum;
  * enum constant is associated with its corresponding string representation used in WordPress.
  *
  * @see <a href=
+ * @since 0.1.0
  *     "https://developer.wordpress.org/reference/functions/get_post_type/">get_post_type()</a>
  */
 public enum WPPostType implements PostTypeEnum {
+  /** A standard WordPress post. */
   POST("post"),
+  /** A WordPress post of the attachment type. */
   ATTACHMENT("attachment"),
+  /** A wildcard representing all WordPress post types. */
   ALL("all");
 
   private final String value;

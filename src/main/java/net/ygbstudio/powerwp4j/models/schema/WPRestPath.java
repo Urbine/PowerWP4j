@@ -30,14 +30,22 @@ import net.ygbstudio.powerwp4j.base.extension.enums.RestPathEnum;
  * as users, posts, categories, media, and tags.
  *
  * @author Yoham Gabriel @ YGBStudio
+ * @since 0.1.0
  */
 public enum WPRestPath implements RestPathEnum {
+  /** REST endpoint for interacting with users. */
   USERS("/users"),
+  /** REST endpoint for interacting with posts. */
   POSTS("/posts"),
+  /** REST endpoint for interacting with photos. */
   PHOTOS("/photos"),
+  /** REST endpoint for interacting with categories. */
   CATEGORIES("/categories"),
+  /** REST endpoint for interacting with media. */
   MEDIA("/media"),
+  /** REST endpoint for interacting with tags. */
   TAGS("/tags"),
+  /** REST endpoint for content uploads, dynamically based on the current year and month. */
   CONTENT_UPLOADS(
       "/wp-content/uploads/"
           + YearMonth.now().getYear()

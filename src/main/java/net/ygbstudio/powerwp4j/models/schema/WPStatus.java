@@ -26,12 +26,18 @@ import net.ygbstudio.powerwp4j.base.extension.enums.PostStatusEnum;
  * Enum class that represents statuses in WordPress.
  *
  * @author Yoham Gabriel @ YGBStudio
+ * @since 0.1.0
  */
 public enum WPStatus implements PostStatusEnum {
+  /** Post status indicating that the post is published and publicly visible. */
   PUBLISH("publish"),
+  /** Post status indicating that the post is private. */
   PRIVATE("private"),
+  /** Post status indicating that the post is a draft. */
   DRAFT("draft"),
+  /** Post status indicating that the post is pending review. */
   PENDING("pending"),
+  /** Post status indicating that the post has been trashed. */
   TRASH("trash");
 
   private final String value;

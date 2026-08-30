@@ -22,8 +22,16 @@ package net.ygbstudio.powerwp4j.models.schema;
 
 import net.ygbstudio.powerwp4j.base.extension.enums.CommentStatusEnum;
 
+/**
+ * Comment status values used by WordPress.
+ *
+ * @author Yoham Gabriel Barboza B. (YGBStudio)
+ * @since 0.1.0
+ */
 public enum WPCommentStatus implements CommentStatusEnum {
+  /** Comment status indicating that comments are open. */
   OPEN("open"),
+  /** Comment status indicating that comments are closed. */
   CLOSED("closed");
 
   private final String value;

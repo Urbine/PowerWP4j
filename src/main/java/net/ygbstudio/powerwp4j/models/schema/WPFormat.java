@@ -26,16 +26,26 @@ import net.ygbstudio.powerwp4j.base.extension.enums.PostFormatEnum;
  * Enum class that represents formats in WordPress.
  *
  * @author Yoham Gabriel @ YGBStudio
+ * @since 0.1.0
  */
 public enum WPFormat implements PostFormatEnum {
+  /** The standard post format. */
   STANDARD("standard"),
+  /** The aside post format, typically short content without a title. */
   ASIDE("aside"),
+  /** The link post format, usually linking to another site. */
   LINK("link"),
+  /** The status post format, typically a brief status update. */
   STATUS("status"),
+  /** The quote post format, usually a quotation. */
   QUOTE("quote"),
+  /** The gallery post format, displaying a collection of images. */
   GALLERY("gallery"),
+  /** The chat post format, displaying a conversation. */
   CHAT("chat"),
+  /** The video post format, featuring a video. */
   VIDEO("video"),
+  /** The audio post format, featuring an audio clip. */
   AUDIO("audio");
 
   private final String value;

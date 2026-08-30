@@ -22,8 +22,16 @@ package net.ygbstudio.powerwp4j.models.schema;
 
 import net.ygbstudio.powerwp4j.base.extension.enums.CacheSubKeyEnum;
 
+/**
+ * Sub-keys for WordPress cache entries.
+ *
+ * @author Yoham Gabriel Barboza B. (YGBStudio)
+ * @since 0.1.0
+ */
 public enum WPCacheSubKey implements CacheSubKeyEnum {
+  /** Sub-key for the rendered content of a cached item. */
   RENDERED("rendered"),
+  /** Sub-key for protected content of a cached item. */
   PROTECTED("protected");
 
   private final String value;

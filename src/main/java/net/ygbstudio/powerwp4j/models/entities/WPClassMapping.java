@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Unmodifiable;
  * @param <V> The type of the taxonomy value.
  * @param key The key of the class (category or tag).
  * @param value The value of the taxonomy marker.
+ * @since 0.1.0
  */
 public record WPClassMapping<K, V>(@NotNull K key, @NotNull V value) {
 

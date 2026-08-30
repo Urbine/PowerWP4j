@@ -40,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
  * @param cacheKey the cache key represented by the {@link CacheKeyEnum} enum
  * @param cacheSubKeyMap a map containing the cache subkeys represented by {@link CacheSubKeyEnum}
  *     and their corresponding values of type {@code V}.
+ * @since 0.1.0
  */
 public record WPCacheKeySnapshot<V>(
     CacheKeyEnum cacheKey, Map<CacheSubKeyEnum, @Nullable V> cacheSubKeyMap) {}

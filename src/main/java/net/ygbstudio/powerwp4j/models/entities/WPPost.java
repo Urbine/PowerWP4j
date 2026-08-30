@@ -54,6 +54,7 @@ import org.jetbrains.annotations.Nullable;
  * @param meta Meta fields.
  * @param categories The terms assigned to the post in the category taxonomy.
  * @param tags The terms assigned to the post in the post_tag taxonomy.
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record WPPost(

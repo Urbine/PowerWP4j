@@ -29,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @param rendered the rendered HTML content
  * @param protectedContent whether the content is protected (optional)
+ * @since 0.1.0
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record WPRendered(@NotNull String rendered, @Nullable Boolean protectedContent) {}

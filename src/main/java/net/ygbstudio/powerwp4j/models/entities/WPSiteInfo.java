@@ -35,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
  * Holds the site information required to interact with a WordPress site.
  *
  * <p>Stores the WordPress base {@link URI} and application-password credentials.
+ *
+ * @since 0.1.0
  */
 public final class WPSiteInfo {
 

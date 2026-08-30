@@ -26,10 +26,14 @@ import net.ygbstudio.powerwp4j.base.extension.enums.QueryParamEnum;
  * Enumeration of standard WordPress query parameters.
  *
  * @author Yoham Gabriel @ YGBStudio
+ * @since 0.1.0
  */
 public enum WPQueryParam implements QueryParamEnum {
+  /** Query parameter for specifying the number of items per page. */
   PER_PAGE("per_page="),
+  /** Query parameter for specifying the page number. */
   PAGE("page="),
+  /** Query parameter used as a cache-busting timestamp. */
   TIMESTAMP("_t=");
 
   private final String value;

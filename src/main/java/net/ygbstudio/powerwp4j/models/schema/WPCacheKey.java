@@ -27,6 +27,7 @@ import net.ygbstudio.powerwp4j.base.extension.enums.CacheKeyEnum;
  * implementation of the {@link CacheKeyEnum} interface.
  *
  * @see CacheKeyEnum
+ * @since 0.1.0
  */
 public enum WPCacheKey implements CacheKeyEnum {
   /** Alternative text. */
