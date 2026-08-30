@@ -26,6 +26,8 @@ package net.ygbstudio.powerwp4j.exceptions;
  *
  * <p>This exception indicates that the SSL context could not be initialized, a trust store or key
  * store could not be loaded, or some other SSL configuration error occurred.
+ *
+ * @since 0.1.0
  */
 public class SSLConfigurationException extends RuntimeException {
   /**

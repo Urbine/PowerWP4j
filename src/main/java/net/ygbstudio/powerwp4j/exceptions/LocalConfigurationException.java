@@ -20,7 +20,11 @@
 
 package net.ygbstudio.powerwp4j.exceptions;
 
-/** Thrown when local configuration is missing or invalid. */
+/**
+ * Thrown when local configuration is missing or invalid.
+ *
+ * @since 0.1.0
+ */
 public class LocalConfigurationException extends RuntimeException {
   /**
    * Constructs a new exception with the specified detail message.

@@ -25,6 +25,8 @@ package net.ygbstudio.powerwp4j.exceptions;
  *
  * <p>This exception indicates that the WordPress site could not be reached, returned an error HTTP
  * status, or responded with an unexpected body.
+ *
+ * @since 0.1.0
  */
 public class WPRequestException extends RuntimeException {
   /**
