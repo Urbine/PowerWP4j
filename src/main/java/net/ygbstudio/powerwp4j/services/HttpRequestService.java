@@ -64,6 +64,7 @@ import tools.jackson.databind.JsonNode;
  * convenience methods for common flows in the library.
  *
  * @author Yoham Gabriel B.
+ * @since 0.1.0
  */
 public final class HttpRequestService {
 

@@ -43,6 +43,8 @@ import tools.jackson.databind.node.ArrayNode;
  * <p>Instances are obtained via {@link #fromPath(Path)} or {@link #fromFile(File)}. Writes are
  * guarded by a {@link ReentrantLock} so concurrent calls to {@link #write(ArrayNode)} are
  * serialized. Used internally by {@link WPCacheManager}.
+ *
+ * @since 0.1.0
  */
 final class WPCacheWriter {
 

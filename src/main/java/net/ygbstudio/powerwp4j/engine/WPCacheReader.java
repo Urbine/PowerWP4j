@@ -94,6 +94,7 @@ final class WPCacheReader {
    * @return a new {@code FileReader} for {@link #cacheFile}; never {@code null}
    * @throws CacheFileSystemException if the file does not exist
    * @throws IOException if the file cannot be opened
+   * @since 0.1.0
    */
   public @NotNull FileReader getFileReader() throws IOException {
     if (!cacheFile.exists()) {

@@ -63,6 +63,7 @@ import tools.jackson.databind.node.ArrayNode;
  * is up-to-date.
  *
  * @see WPCacheManager
+ * @since 0.1.0
  * @author Yoham Gabriel B.
  */
 public class WPCacheAnalyzer {

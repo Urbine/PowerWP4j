@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param nodeDiff difference in total posts between the two metas
  * @param pageDiff difference in total pages between the two metas
+ * @since 0.1.0
  */
 record WPCacheDelta(long nodeDiff, long pageDiff) {
 

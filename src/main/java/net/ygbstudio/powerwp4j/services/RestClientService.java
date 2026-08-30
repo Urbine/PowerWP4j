@@ -43,6 +43,7 @@ import tools.jackson.databind.ObjectMapper;
  * WordPress REST API. It is not intended to be instantiated, and its methods are static.
  *
  * @author Yoham Gabriel B.
+ * @since 0.1.0
  */
 public final class RestClientService {
   private static final Logger restClientServiceLogger =

@@ -45,6 +45,7 @@ import tools.jackson.databind.JsonNode;
  * #of(WPSiteInfo, SSLContext)}.
  *
  * @author Yoham Gabriel @ YGBStudio
+ * @since 0.1.0
  */
 public class WPRestClient {
   private final WPSiteInfo siteInfo;

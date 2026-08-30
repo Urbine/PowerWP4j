@@ -39,6 +39,8 @@ import org.slf4j.LoggerFactory;
  * Factory for {@link SSLContext} instances used by the WordPress client.
  *
  * <p>Provides helpers for default, custom trust-manager, and trust-store configurations.
+ *
+ * @since 0.1.0
  */
 public class SSLContexts {
 

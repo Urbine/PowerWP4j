@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
  * @param totalPosts the total posts
  * @param totalPages the total pages
  * @author Yoham Gabriel @ YGBStudio
+ * @since 0.1.0
  */
 public record WPCacheMeta(long totalPages, long totalPosts, @Nullable LocalDate lastUpdated) {
 
