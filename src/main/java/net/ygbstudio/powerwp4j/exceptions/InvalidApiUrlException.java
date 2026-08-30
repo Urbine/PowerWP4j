@@ -25,14 +25,25 @@ import java.net.URISyntaxException;
 /**
  * Exception thrown when an invalid API URL is provided and any of the internal methods of PowerWP4j
  * detect a {@link URISyntaxException}.
+ *
+ * @since 0.1.0
  */
 public class InvalidApiUrlException extends RuntimeException {
-  /** Creates a new invalid API URL exception with the given message. */
+  /**
+   * Creates a new invalid API URL exception with the given message.
+   *
+   * @param message the detail message explaining the cause of the failure.
+   */
   public InvalidApiUrlException(String message) {
     super(message);
   }
 
-  /** Creates a new invalid API URL exception with the given message and cause. */
+  /**
+   * Creates a new invalid API URL exception with the given message and cause.
+   *
+   * @param message the detail message explaining the cause of the failure.
+   * @param uriSyntaxEx the upstream {@link URISyntaxException} detected while parsing the API URL.
+   */
   public InvalidApiUrlException(String message, URISyntaxException uriSyntaxEx) {
     super(message, uriSyntaxEx);
   }

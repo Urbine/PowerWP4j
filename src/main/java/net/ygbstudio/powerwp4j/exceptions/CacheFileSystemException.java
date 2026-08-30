@@ -27,14 +27,24 @@ import org.jetbrains.annotations.NotNull;
  * Exception thrown when a file system error occurs while working with the local cache file.
  *
  * @author Yoham Gabriel B.
+ * @since 0.1.0
  */
 public class CacheFileSystemException extends RuntimeException {
-  /** Creates a new cache file system exception with the given message. */
+  /**
+   * Creates a new cache file system exception with the given message.
+   *
+   * @param message the detail message explaining the cause of the failure.
+   */
   public CacheFileSystemException(String message) {
     super(message);
   }
 
-  /** Creates a new cache file system exception with a lazily computed message. */
+  /**
+   * Creates a new cache file system exception with a lazily computed message.
+   *
+   * @param message a supplier that lazily computes the detail message explaining the cause of the
+   *     failure.
+   */
   public CacheFileSystemException(@NotNull Supplier<String> message) {
     super(message.get());
   }

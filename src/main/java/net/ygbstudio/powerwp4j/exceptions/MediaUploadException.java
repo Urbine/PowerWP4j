@@ -27,14 +27,24 @@ import org.jetbrains.annotations.NotNull;
  * Exception thrown when there is an error during or before a media upload procedure.
  *
  * @author Yoham Gabriel B. @ YGBStudio
+ * @since 0.1.0
  */
 public class MediaUploadException extends RuntimeException {
-  /** Creates a new media upload exception with the given message. */
+  /**
+   * Creates a new media upload exception with the given message.
+   *
+   * @param message the detail message explaining the cause of the failure.
+   */
   public MediaUploadException(String message) {
     super(message);
   }
 
-  /** Creates a new media upload exception with a lazily computed message. */
+  /**
+   * Creates a new media upload exception with a lazily computed message.
+   *
+   * @param message a supplier that lazily computes the detail message explaining the cause of the
+   *     failure.
+   */
   public MediaUploadException(@NotNull Supplier<String> message) {
     super(message.get());
   }

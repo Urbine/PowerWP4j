@@ -28,19 +28,34 @@ import org.jetbrains.annotations.NotNull;
  * metadata or its creation.
  *
  * @author Yoham Gabriel B. @ YGBStudio
+ * @since 0.1.0
  */
 public class CacheMetaDataException extends RuntimeException {
-  /** Creates a new cache metadata exception with the given message. */
+  /**
+   * Creates a new cache metadata exception with the given message.
+   *
+   * @param message the detail message explaining the cause of the failure.
+   */
   public CacheMetaDataException(@NotNull String message) {
     super(message);
   }
 
-  /** Creates a new cache metadata exception with a lazily computed message. */
+  /**
+   * Creates a new cache metadata exception with a lazily computed message.
+   *
+   * @param message a supplier that lazily computes the detail message explaining the cause of the
+   *     failure.
+   */
   public CacheMetaDataException(@NotNull Supplier<String> message) {
     super(message.get());
   }
 
-  /** Creates a new cache metadata exception with a message and an upstream exception (cause). */
+  /**
+   * Creates a new cache metadata exception with a message and an upstream exception (cause).
+   *
+   * @param message the detail message explaining the cause of the failure.
+   * @param cause the upstream exception that caused this exception to be thrown.
+   */
   public CacheMetaDataException(@NotNull String message, @NotNull Throwable cause) {
     super(message, cause);
   }

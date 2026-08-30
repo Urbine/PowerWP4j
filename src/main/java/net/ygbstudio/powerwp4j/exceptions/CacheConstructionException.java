@@ -28,14 +28,24 @@ import org.jetbrains.annotations.NotNull;
  * cache.
  *
  * @author Yoham Gabriel B. @ YGBStudio
+ * @since 0.1.0
  */
 public class CacheConstructionException extends RuntimeException {
-  /** Creates a new cache construction exception with the given message. */
+  /**
+   * Creates a new cache construction exception with the given message.
+   *
+   * @param message the detail message explaining the cause of the failure.
+   */
   public CacheConstructionException(String message) {
     super(message);
   }
 
-  /** Creates a new cache construction exception with a lazily computed message. */
+  /**
+   * Creates a new cache construction exception with a lazily computed message.
+   *
+   * @param message a supplier that lazily computes the detail message explaining the cause of the
+   *     failure.
+   */
   public CacheConstructionException(@NotNull Supplier<String> message) {
     super(message.get());
   }
