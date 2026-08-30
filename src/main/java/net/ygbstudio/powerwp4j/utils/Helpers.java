@@ -22,7 +22,6 @@ package net.ygbstudio.powerwp4j.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import net.ygbstudio.powerwp4j.base.extension.enums.FriendlyEnum;
+import net.ygbstudio.powerwp4j.exceptions.LocalConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -66,7 +66,8 @@ public final class Helpers {
    *
    * @param propertyFileName The name of the property file to load.
    * @return A {@link Properties} object containing the loaded properties.
-   * @throws RuntimeException if an error occurs while reading the property file.
+   * @throws LocalConfigurationException if the configuration properties file is not found on the
+   *     classpath.
    */
   public static Optional<Properties> getPropertiesFromResources(String propertyFileName) {
     Properties properties = new Properties();
@@ -74,7 +75,7 @@ public final class Helpers {
     try (InputStream in = Helpers.class.getResourceAsStream("/" + propertyFileName)) {
       if (Objects.isNull(in)) {
         helpersLogger.warn("Properties file not found...");
-        throw new FileNotFoundException(
+        throw new LocalConfigurationException(
             "Property file '" + propertyFileName + "' not found in resources.");
       }
       helpersLogger.info("Properties file loaded successfully...");
