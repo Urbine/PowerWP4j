@@ -44,6 +44,8 @@ import org.jetbrains.annotations.NotNull;
  *
  * <p>This class is an extension of {@link AbstractPayloadNodeBuilder} and provides additional
  * methods for setting properties specific to the WordPress REST API.
+ *
+ * @since 0.1.0
  */
 public class WPPayloadNodeBuilder extends AbstractPayloadNodeBuilder<WPPayloadNodeBuilder> {
 

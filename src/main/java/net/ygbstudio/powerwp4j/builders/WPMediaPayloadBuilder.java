@@ -35,6 +35,7 @@ import tools.jackson.databind.JsonNode;
  * <p>If you need to use a builder for posts or taxonomies, use {@link WPBasicPayloadBuilder}.
  *
  * @see AbstractMediaPayloadBuilder
+ * @since 0.1.0
  */
 @JsonInclude(Include.NON_EMPTY)
 public class WPMediaPayloadBuilder extends AbstractMediaPayloadBuilder<WPMediaPayloadBuilder> {
@@ -51,17 +52,29 @@ public class WPMediaPayloadBuilder extends AbstractMediaPayloadBuilder<WPMediaPa
     return new WPMediaPayloadBuilder();
   }
 
-  /** Returns the configured alternative text, or {@code null} if unset. */
+  /**
+   * Returns the configured alternative text, or {@code null} if unset.
+   *
+   * @return the configured alternative text, or {@code null} if unset.
+   */
   public String getAltText() {
     return altText;
   }
 
-  /** Returns the configured caption, or {@code null} if unset. */
+  /**
+   * Returns the configured caption, or {@code null} if unset.
+   *
+   * @return the configured caption, or {@code null} if unset.
+   */
   public String getCaption() {
     return caption;
   }
 
-  /** Returns the configured description, or {@code null} if unset. */
+  /**
+   * Returns the configured description, or {@code null} if unset.
+   *
+   * @return the configured description, or {@code null} if unset.
+   */
   public String getDescription() {
     return description;
   }

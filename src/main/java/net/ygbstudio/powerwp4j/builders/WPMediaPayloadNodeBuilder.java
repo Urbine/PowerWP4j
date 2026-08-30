@@ -22,6 +22,8 @@ package net.ygbstudio.powerwp4j.builders;
 
 import net.ygbstudio.powerwp4j.base.extension.builders.AbstractPayloadNodeBuilder;
 import net.ygbstudio.powerwp4j.models.schema.WPCacheKey;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * WPMediaPayloadNodeBuilder is a builder class for constructing a WordPress media payload. It
@@ -31,13 +33,20 @@ import net.ygbstudio.powerwp4j.models.schema.WPCacheKey;
  * class.
  *
  * @see WPPayloadNodeBuilder
+ * @since 0.1.0
  */
 public class WPMediaPayloadNodeBuilder
     extends AbstractPayloadNodeBuilder<WPMediaPayloadNodeBuilder> {
 
   private WPMediaPayloadNodeBuilder() {}
 
-  public static WPMediaPayloadNodeBuilder builder() {
+  /**
+   * Creates a new instance of {@link WPMediaPayloadNodeBuilder}.
+   *
+   * @return A new instance of {@link WPMediaPayloadNodeBuilder}.
+   */
+  @Contract(" -> new")
+  public static @NotNull WPMediaPayloadNodeBuilder builder() {
     return new WPMediaPayloadNodeBuilder().clear();
   }
 
