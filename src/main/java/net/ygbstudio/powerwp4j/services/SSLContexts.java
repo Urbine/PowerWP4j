@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 0.1.0
  */
-public class SSLContexts {
+public final class SSLContexts {
 
   private SSLContexts() {}
 
