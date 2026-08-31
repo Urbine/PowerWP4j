@@ -36,7 +36,7 @@ public enum WPCacheKey implements CacheKeyEnum {
   AUTHOR("author"),
   /** Media caption. */
   CAPTION("caption"),
-  /** CSS class list. */
+  /** CSS class list — WordPress post classes; source for taxonomy parsing */
   CLASS_LIST("class_list"),
   /** Rendered content. */
   CONTENT("content"),
