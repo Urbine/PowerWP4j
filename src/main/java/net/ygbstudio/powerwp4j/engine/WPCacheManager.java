@@ -90,7 +90,7 @@ import tools.jackson.databind.node.ArrayNode;
  * @see WPCacheWriter
  * @see WPCacheAnalyzer
  */
-public class WPCacheManager {
+public final class WPCacheManager {
   private static final Logger wpSiteEngineLogger = LoggerFactory.getLogger(WPCacheManager.class);
 
   /** Default number of posts per paginated REST request; WordPress enforces 10–100. */
