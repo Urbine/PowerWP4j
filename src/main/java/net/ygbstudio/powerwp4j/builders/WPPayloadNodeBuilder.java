@@ -47,7 +47,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @since 0.1.0
  */
-public class WPPayloadNodeBuilder extends AbstractPayloadNodeBuilder<WPPayloadNodeBuilder> {
+public final class WPPayloadNodeBuilder extends AbstractPayloadNodeBuilder<WPPayloadNodeBuilder> {
 
   private WPPayloadNodeBuilder() {}
 

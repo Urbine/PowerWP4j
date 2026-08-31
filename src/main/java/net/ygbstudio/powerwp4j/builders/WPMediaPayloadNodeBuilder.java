@@ -35,7 +35,7 @@ import org.jetbrains.annotations.NotNull;
  * @see WPPayloadNodeBuilder
  * @since 0.1.0
  */
-public class WPMediaPayloadNodeBuilder
+public final class WPMediaPayloadNodeBuilder
     extends AbstractPayloadNodeBuilder<WPMediaPayloadNodeBuilder> {
 
   private WPMediaPayloadNodeBuilder() {}

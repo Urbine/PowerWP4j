@@ -38,7 +38,8 @@ import tools.jackson.databind.JsonNode;
  * @since 0.1.0
  */
 @JsonInclude(Include.NON_EMPTY)
-public class WPMediaPayloadBuilder extends AbstractMediaPayloadBuilder<WPMediaPayloadBuilder> {
+public final class WPMediaPayloadBuilder
+    extends AbstractMediaPayloadBuilder<WPMediaPayloadBuilder> {
 
   private WPMediaPayloadBuilder() {}
 
